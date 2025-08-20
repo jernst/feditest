@@ -351,7 +351,7 @@ class AuthenticatedMastodonApiClient:
         # Check for it in the home timeline.
         elements = self.http_get('/api/v1/timelines/home')
         #   Home timeline first case: a post was created by an account we follow
-        response = find_first_in_array(elements, lambda s: s['uri'] == object_uri)
+        response : dict[str,Any] | None = find_first_in_array(elements, lambda s: s['uri'] == object_uri)
         if not response:
             #   Home timeline second case: an announce/boost was created by an account we follow -- need to look for the original URI
             if reblog_response := find_first_in_array(elements, lambda s: 'reblog' in s and s['reblog'] and 'uri' in s['reblog'] and s['reblog']['uri'] == object_uri) :
@@ -362,7 +362,7 @@ class AuthenticatedMastodonApiClient:
             # s['status'] exists for some things in notifications, but not others (such as "follow")
             if notifications_response := find_first_in_array(elements, lambda s: 'status' in s and s['status']['uri'] == object_uri) :
                 response = notifications_response['status']
-        return response
+        return response if response else {}
 
 
     def note_dict(self, note_uri: str) -> dict[str, Any]:

@@ -6,6 +6,7 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 
 from feditest.utils import FEDITEST_VERSION
 
+
 def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
     """
     Run this command.

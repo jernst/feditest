@@ -7,6 +7,7 @@ import feditest
 from feditest.cli.utils import create_plan_from_session_and_constellations
 from feditest.reporting import fatal
 
+
 def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
     """
     Run this command.

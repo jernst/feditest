@@ -12,6 +12,7 @@ from feditest.testruntranscriptserializer.summary import SummaryTestRunTranscrip
 from feditest.testruntranscriptserializer.tap import TapTestRunTranscriptSerializer
 from feditest.utils import FEDITEST_VERSION
 
+
 def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
     """
     Run this command.

@@ -5,7 +5,6 @@ Combine node definitions into a constellation.
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 
 from feditest.cli.utils import create_constellation_from_nodes
-from feditest.testplan import TestPlanConstellation, TestPlanConstellationNode
 
 
 def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
@@ -13,13 +12,9 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
     Run this command.
     """
 
-    roles : dict[str,TestPlanConstellationNode | None] = {}
-
     if remaining:
         parser.print_help()
         return 0
-
-    constellation = TestPlanConstellation(roles)
 
     constellation = create_constellation_from_nodes(args)
     if args.name:
