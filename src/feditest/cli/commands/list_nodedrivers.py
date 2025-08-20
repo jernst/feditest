@@ -6,6 +6,8 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 
 import feditest
 import feditest.cli
+from feditest.cli.utils import add_nodedriversdir_argument
+
 
 def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
     """
@@ -32,6 +34,6 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     cmd_name: name of this command
     """
     parser = parent_parser.add_parser(cmd_name, help='List the available drivers for nodes that can be tested')
-    parser.add_argument('--nodedriversdir', action='append', help='Directory or directories where to find extra drivers for nodes that can be tested')
+    add_nodedriversdir_argument(parser)
 
     return parser

@@ -2,7 +2,7 @@
 Utility functions used by the CLI commands.
 """
 
-from argparse import ArgumentError, Namespace
+from argparse import ArgumentError, ArgumentParser, Namespace
 import re
 
 from msgspec import ValidationError
@@ -10,6 +10,7 @@ from msgspec import ValidationError
 import feditest
 from feditest.tests import Test
 from feditest.testplan import TestPlan, TestPlanConstellation, TestPlanConstellationNode, TestPlanSessionTemplate, TestPlanTestSpec
+
 
 def create_plan_from_testplan(args: Namespace) -> TestPlan:
     if args.constellation:
@@ -133,3 +134,24 @@ def create_constellation_from_nodes(args: Namespace) -> TestPlanConstellation:
 
     constellation = TestPlanConstellation(roles)
     return constellation
+
+
+def _help_for_default_dirs(dirs: list[str]) -> str:
+    return f'(default: { ", ".join(dirs) })'
+
+
+def add_testsdir_argument(parser: ArgumentParser) -> None:
+    """
+    Helper to make help text consistent across commands.
+    """
+    parser.add_argument('--testsdir',
+                        action='append',
+                        help='Directory or directories where to find tests ' + _help_for_default_dirs(feditest.DEFAULT_TESTS_DIRS))
+
+def add_nodedriversdir_argument(parser: ArgumentParser) -> None:
+    """
+    Helper to make help text consistent across commands.
+    """
+    parser.add_argument('--nodedriversdir',
+                        action='append',
+                        help='Directory or directories where to find extra drivers for nodes that can be tested ' + _help_for_default_dirs(feditest.DEFAULT_NODE_DRIVERS_DIRS))

@@ -34,6 +34,9 @@ _registered_as_test_step : dict[str,Callable[..., None]] = {}
 
 _loading_tests = False
 
+DEFAULT_TESTS_DIRS = ['tests']
+DEFAULT_NODE_DRIVERS_DIRS = ['nodedrivers']
+
 
 def _full_name_of_function( f: Callable[..., None]) -> str:
     """
@@ -48,7 +51,7 @@ def load_tests_from(dirs: list[str]) -> None:
     Load all tests found in the provided directories. This is broken into two steps for easier testing.
     """
     if not dirs:
-        dirs = ['tests']
+        dirs = DEFAULT_TESTS_DIRS
 
     _load_tests_pass1(dirs)
     _load_tests_pass2()
@@ -183,6 +186,9 @@ def load_node_drivers_from(dirs: list[str]) -> None:
     """
     Load all node drivers found in the provided directories
     """
+    if not dirs:
+        dirs = DEFAULT_NODE_DRIVERS_DIRS
+
     global _loading_node_drivers
 
     _loading_node_drivers = True

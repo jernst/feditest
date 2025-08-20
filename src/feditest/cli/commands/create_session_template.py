@@ -6,7 +6,10 @@ as input for generate-testplan.
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 
 import feditest
-from feditest.cli.utils import create_session_template_from_tests
+from feditest.cli.utils import (
+    add_testsdir_argument,
+    create_session_template_from_tests
+)
 
 
 def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
@@ -38,7 +41,7 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     """
     # general flags and options
     parser = parent_parser.add_parser(cmd_name, help='Create a template for a test session')
-    parser.add_argument('--testsdir', action='append', help='Directory or directories where to find tests')
+    add_testsdir_argument(parser)
 
     # session template options
     parser.add_argument('--name', default=None, required=False, help='Name of the created test session template')

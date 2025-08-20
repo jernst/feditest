@@ -4,7 +4,10 @@ Create a test plan.
 
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 import feditest
-from feditest.cli.utils import create_plan_from_session_and_constellations
+from feditest.cli.utils import (
+    add_testsdir_argument,
+    create_plan_from_session_and_constellations
+)
 from feditest.reporting import fatal
 
 
@@ -39,7 +42,7 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     """
     # general flags and options
     parser = parent_parser.add_parser(cmd_name, help='Create a test plan by running all provided test sessions in all provided constellations')
-    parser.add_argument('--testsdir', action='append', help='Directory or directories where to find tests')
+    add_testsdir_argument(parser)
 
     # test plan options
     parser.add_argument('--name', default=None, required=False, help='Name of the generated test plan')

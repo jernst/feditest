@@ -7,6 +7,8 @@ from typing import cast
 
 import feditest
 from feditest.cli.utils import (
+    add_nodedriversdir_argument,
+    add_testsdir_argument,
     create_plan_from_session_and_constellations,
     create_plan_from_testplan
 )
@@ -97,8 +99,8 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     """
     # general flags and options
     parser = parent_parser.add_parser(cmd_name, help='Run one or more tests' )
-    parser.add_argument('--testsdir', action='append', help='Directory or directories where to find tests')
-    parser.add_argument('--nodedriversdir', action='append', help='Directory or directories where to find extra drivers for nodes that can be tested')
+    add_nodedriversdir_argument(parser)
+    add_testsdir_argument(parser)
     parser.add_argument('--domain', type=hostname_validate, help='Local-only DNS domain for the DNS hostnames that are auto-generated for nodes')
     parser.add_argument('-i', '--interactive', action="store_true", help="Run the tests interactively")
     parser.add_argument('--who', action='store_true', help="Record who ran the test plan on what host.")

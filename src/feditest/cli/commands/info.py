@@ -7,8 +7,12 @@ from typing import Any
 
 import feditest
 import feditest.cli
-from feditest.utils import format_name_value_string
+from feditest.cli.utils import (
+    add_nodedriversdir_argument,
+    add_testsdir_argument
+)
 from feditest.reporting import warning
+from feditest.utils import format_name_value_string
 
 
 def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
@@ -99,8 +103,8 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     cmd_name: name of this command
     """
     parser = parent_parser.add_parser( cmd_name, help='Provide information on a variety of objects')
-    parser.add_argument('--testsdir', action='append', help='Directory or directories where to find tests')
-    parser.add_argument('--nodedriversdir', action='append', help='Directory or directories where to find extra drivers for nodes that can be tested')
+    add_nodedriversdir_argument(parser)
+    add_testsdir_argument(parser)
     type_group = parser.add_mutually_exclusive_group(required=True)
     type_group.add_argument('--test',  help='Provide information about a test.')
     type_group.add_argument('--nodedriver',  help='Provide information about a driver for a node to be tested.')
