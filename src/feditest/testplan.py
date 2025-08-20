@@ -252,6 +252,21 @@ class TestPlanConstellationNode(msgspec.Struct):
                     raise TestPlanError(context_msg + 'Invalid hostname: not a string')
 
 
+    def as_json(self) -> bytes:
+        ret = msgspec.json.encode(self)
+        ret = msgspec.json.format(ret, indent=4)
+        return ret
+
+
+    def save(self, filename: str) -> None:
+        with open(filename, 'wb') as f:
+            f.write(self.as_json())
+
+
+    def print(self) -> None:
+        print(self.as_json().decode('utf-8'))
+
+
 class TestPlanConstellation(msgspec.Struct):
     roles : dict[str,TestPlanConstellationNode | None] # can be None if used as template
     name: str | None = None
