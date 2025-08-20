@@ -18,7 +18,7 @@
 UNAME?=$(shell uname -s | tr [A-Z] [a-z])
 TAG?=default
 VENV?=venv.$(UNAME).$(TAG)
-PYTHON?=python3.11
+PYTHON?=python3.13
 FEDITEST?=$(VENV)/bin/feditest -v
 DOMAIN?=--domain 1234.lan
 

@@ -34,9 +34,9 @@ def main() -> None:
 
     set_reporting_level(args.verbose)
 
-    if sys.version_info.major != 3 or sys.version_info.minor != 11:
-        warning(f"feditest currently requires Python 3.11. You are using { sys.version }"
-                + " and may get unpredictable results. We'll get to other versions in the future.")
+    if sys.version_info.major != 3 or sys.version_info.minor != 13:
+        warning(f"feditest currently requires Python 3.13. You are using { sys.version }"
+                + " and may get unpredictable results.")
 
     if cmd_name in cmds:
         try :
