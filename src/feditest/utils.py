@@ -241,11 +241,12 @@ def load_python_from(dirs: list[str], skip_init_files: bool) -> None:
                 spec = importlib.util.spec_from_file_location(module_name, f)
                 if spec is not None and spec.loader is not None:
                     module = importlib.util.module_from_spec(spec)
+                    print(f'XXX adding module { module_name }')
                     sys.modules[module_name] = module
                     try :
                         spec.loader.exec_module(module)
                     except BaseException as e:
-                        warning(f'Attempt to lead module { module_name } failed. Skipping.', e)
+                        warning(f'Attempt to load module { module_name } failed. Skipping.', e)
         finally:
             sys.path = sys_path_before
 
