@@ -8,6 +8,7 @@ import re
 import feditest
 from feditest.cli.utils import (
     add_filter_regex_argument,
+    add_nodedriversdir_argument,
     add_testsdir_argument
 )
 
@@ -21,6 +22,9 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
         return 0
 
     pattern = re.compile(args.filter_regex) if args.filter_regex else None
+
+    feditest.load_default_node_drivers()
+    feditest.load_node_drivers_from(args.nodedriversdir)
 
     feditest.load_default_tests()
     feditest.load_tests_from(args.testsdir)
@@ -40,6 +44,7 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     """
     parser = parent_parser.add_parser(cmd_name, help='List the available tests')
     add_filter_regex_argument(parser)
+    add_nodedriversdir_argument(parser)
     add_testsdir_argument(parser)
 
     return parser
