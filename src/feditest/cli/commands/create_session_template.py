@@ -7,6 +7,8 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 
 import feditest
 from feditest.cli.utils import (
+    add_filter_regex_argument,
+    add_test_argument,
     add_testsdir_argument,
     create_session_template_from_tests
 )
@@ -45,8 +47,8 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
 
     # session template options
     parser.add_argument('--name', default=None, required=False, help='Name of the created test session template')
-    parser.add_argument('--filter-regex', default=None, help='Only include tests whose name matches this regular expression')
-    parser.add_argument('--test', action='append', help='Include this/these named tests(s)')
+    add_filter_regex_argument(parser)
+    add_test_argument(parser)
 
     # output options
     parser.add_argument('--out', '-o', default=None, required=False, help='Name of the file for the created test session template')

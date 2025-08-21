@@ -6,7 +6,10 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 import re
 
 import feditest
-from feditest.cli.utils import add_testsdir_argument
+from feditest.cli.utils import (
+    add_filter_regex_argument,
+    add_testsdir_argument
+)
 
 
 def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
@@ -36,7 +39,7 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     cmd_name: name of this command
     """
     parser = parent_parser.add_parser(cmd_name, help='List the available tests')
-    parser.add_argument('--filter-regex', default=None, help='Only list tests whose name matches this regular expression')
+    add_filter_regex_argument(parser)
     add_testsdir_argument(parser)
 
     return parser

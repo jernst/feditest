@@ -148,6 +148,7 @@ def add_testsdir_argument(parser: ArgumentParser) -> None:
                         action='append',
                         help='Directory or directories where to find tests ' + _help_for_default_dirs(feditest.DEFAULT_TESTS_DIRS))
 
+
 def add_nodedriversdir_argument(parser: ArgumentParser) -> None:
     """
     Helper to make help text consistent across commands.
@@ -155,3 +156,19 @@ def add_nodedriversdir_argument(parser: ArgumentParser) -> None:
     parser.add_argument('--nodedriversdir',
                         action='append',
                         help='Directory or directories where to find extra drivers for nodes that can be tested ' + _help_for_default_dirs(feditest.DEFAULT_NODE_DRIVERS_DIRS))
+
+
+def add_filter_regex_argument(parser: ArgumentParser) -> None:
+    """
+    Helper to make help text consistent across commands.
+    """
+    parser.add_argument('--filter-regex',
+                        default=None,
+                        help='Only include tests whose name matches this regular expression')
+
+
+def add_test_argument(parser: ArgumentParser) -> None:
+    """
+    Helper to make help text consistent across commands.
+    """
+    parser.add_argument('--test', action='append', help='Include this/these named tests(s)')

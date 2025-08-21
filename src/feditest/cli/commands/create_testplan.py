@@ -5,6 +5,8 @@ Create a test plan.
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 import feditest
 from feditest.cli.utils import (
+    add_filter_regex_argument,
+    add_test_argument,
     add_testsdir_argument,
     create_plan_from_session_and_constellations
 )
@@ -50,8 +52,8 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     parser.add_argument('--session', '--session-template', required=False, help='File containing a JSON fragment defining a test session')
     parser.add_argument('--node', action='append',
                         help="Use <role>=<file> to specify that the node definition in 'file' is supposed to be used for constellation role 'role'")
-    parser.add_argument('--filter-regex', default=None, help='Only include tests whose name matches this regular expression')
-    parser.add_argument('--test', action='append', help='Run this/these named tests(s)')
+    add_filter_regex_argument(parser)
+    add_test_argument(parser)
 
     # output options
     parser.add_argument('--out', '-o', default=None, required=False, help='Name of the file for the generated test plan')
