@@ -587,7 +587,7 @@ class UbosNodeDriver(NodeDriver):
         filename = self._generate_unique_cert_filename(root_cert)
         trace(f'Add cert to trust store with filename {filename}')
         # Sorry for the trickery, this allows us to avoid having to have an extra parameter for scp-equivalent or such
-        cmd = f'sudo bash -c "cat > { filename } && update-ca-trust refresh"'
+        cmd = f'sudo bash -c "cat > { filename } && update-ca-trust extract"'
         if self._exec_shell(cmd, rshcmd, root_cert).returncode:
             error(f'Failed to execute cmd {cmd}')
 
@@ -599,6 +599,6 @@ class UbosNodeDriver(NodeDriver):
         """
         filename = self._generate_unique_cert_filename(root_cert)
         trace(f'Remove cert from trust store with filename {filename}')
-        cmd = f'sudo bash -c "[[ ! -e { filename } ]] || rm { filename } && update-ca-trust refresh"'
+        cmd = f'sudo bash -c "[[ ! -e { filename } ]] || rm { filename } && update-ca-trust extract"'
         if self._exec_shell(cmd, rshcmd, root_cert).returncode:
             error(f'Failed to execute cmd {cmd}')
