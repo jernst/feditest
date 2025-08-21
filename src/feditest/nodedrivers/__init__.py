@@ -179,11 +179,16 @@ class AbstractAccountManager(AccountManager):
     by subclasses.
     As the name (but not the code) says, it is intended to be abstract. We love Python.
     """
-    def __init__(self, initial_accounts: list[Account], initial_non_existing_accounts: list[NonExistingAccount]):
+    def __init__(self, initial_accounts: list[Account] | None = None, initial_non_existing_accounts: list[NonExistingAccount] | None = None):
         """
         Provide the accounts and non-existing-accounts that are known to exist/not exist
         when the Node is provisioned.
         """
+        if initial_accounts is None:
+            initial_accounts = []
+        if initial_non_existing_accounts is None:
+            initial_non_existing_accounts = []
+
         self._accounts_allocated_to_role : dict[str | None, Account] = { account.role : account for account in initial_accounts if account.role }
         self._accounts_not_allocated_to_role : list[Account] = [ account for account in initial_accounts if not account.role ]
 
