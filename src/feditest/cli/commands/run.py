@@ -7,7 +7,9 @@ from typing import cast
 
 import feditest
 from feditest.cli.utils import (
+    add_filter_regex_argument,
     add_nodedriversdir_argument,
+    add_test_argument,
     add_testsdir_argument,
     create_plan_from_session_and_constellations,
     create_plan_from_testplan
@@ -32,12 +34,11 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
         parser.print_help()
         return 0
 
+    feditest.load_default_node_drivers()
+    feditest.load_node_drivers_from(args.nodedriversdir)
+
     feditest.load_default_tests()
     feditest.load_tests_from(args.testsdir)
-
-    feditest.load_default_node_drivers()
-    if args.nodedriversdir:
-        feditest.load_node_drivers_from(args.nodedriversdir)
 
     if args.domain:
         set_registry_singleton(Registry.create(args.domain)) # overwrite
