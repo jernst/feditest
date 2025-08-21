@@ -534,7 +534,7 @@ class UbosNodeDriver(NodeDriver):
 
 
     def _cleanup_node(self, config: UbosNodeConfiguration):
-        trace('Cleaning up UbosNode')
+        trace('Cleaning up Node provisioned with UbosNodeDriver')
         self._exec_shell( f"sudo ubos-admin undeploy --siteid { config.siteid }", config.rshcmd ) # ignore errors
 
 
