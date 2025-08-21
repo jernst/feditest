@@ -32,6 +32,7 @@ from feditest.nodedrivers.mastodon import (
     USERID_NON_EXISTING_ACCOUNT_FIELD
 )
 from feditest.nodedrivers.ubos import (
+    UbosNode,
     UbosNodeConfiguration,
     UbosNodeDeployConfiguration,
     UbosNodeDriver,
@@ -169,7 +170,7 @@ class MastodonUbosAccountManager(DefaultAccountManager):
             self._accounts_not_allocated_to_role.append(admin_account)
 
 
-class MastodonUbosNode(MastodonNode):
+class MastodonUbosNode(MastodonNode, UbosNode):
     """
     A Mastodon Node running on UBOS. This means we know how to interact with it exactly.
     """
@@ -200,20 +201,6 @@ class MastodonUbosNode(MastodonNode):
         userid = self._generate_candidate_userid()
 
         return FediverseNonExistingAccount(role, userid)
-
-
-    def add_cert_to_trust_store(self, root_cert: str) -> None:
-        config = cast(UbosNodeConfiguration, self.config)
-        node_driver = cast(MastodonUbosNodeDriver, self.node_driver)
-
-        node_driver.add_cert_to_trust_store_via(root_cert, config.rshcmd)
-
-
-    def remove_cert_from_trust_store(self, root_cert: str) -> None:
-        config = cast(UbosNodeConfiguration, self.config)
-        node_driver = cast(MastodonUbosNodeDriver, self.node_driver)
-
-        node_driver.remove_cert_from_trust_store_via(root_cert, config.rshcmd)
 
 
     def _generate_candidate_userid(self) -> str:

@@ -413,6 +413,25 @@ class UbosNodeFromBackupConfiguration(UbosNodeConfiguration):
         return self._backup_appconfigid
 
 
+class UbosNode(Node):
+    """
+    Defines functionality common to Nodes provisioned through UBOS Gears.
+    """
+    def add_cert_to_trust_store(self, root_cert: str) -> None:
+        config = cast(UbosNodeConfiguration, self.config)
+        node_driver = cast(UbosNodeDriver, self.node_driver)
+
+        node_driver.add_cert_to_trust_store_via(root_cert, config.rshcmd)
+
+
+    def remove_cert_from_trust_store(self, root_cert: str) -> None:
+        config = cast(UbosNodeConfiguration, self.config)
+        node_driver = cast(UbosNodeDriver, self.node_driver)
+
+        node_driver.remove_cert_from_trust_store_via(root_cert, config.rshcmd)
+
+
+
 class UbosNodeDriver(NodeDriver):
     """
     A general-purpose NodeDriver for Nodes provisioned through UBOS Gears.
