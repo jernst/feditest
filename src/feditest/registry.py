@@ -5,6 +5,7 @@ certificates.
 
 import certifi
 from cryptography import x509
+from cryptography.x509.oid import ExtendedKeyUsageOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat, load_pem_private_key
@@ -117,6 +118,18 @@ class Registry(msgspec.Struct):
             if self.ca.key is None:
                 raise Exception("No key for CA")
             ca_key = cast(rsa.RSAPrivateKey, load_pem_private_key(self.ca.key.encode('utf-8'), password=None))
+
+            ca_key_usage = x509.KeyUsage(
+                    digital_signature=False,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=True,  # important
+                    crl_sign=True,       # important
+                    encipher_only=False,
+                    decipher_only=False)
+
             now = datetime.now(UTC)
             ca_cert = x509.CertificateBuilder().subject_name(ca_subject
                 ).issuer_name(ca_subject
@@ -125,6 +138,9 @@ class Registry(msgspec.Struct):
                 ).not_valid_before(now
                 ).not_valid_after(now + timedelta(days=365)
                 ).add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True,
+                ).add_extension(x509.SubjectKeyIdentifier.from_public_key(ca_key.public_key()), critical=False
+                ).add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), critical=False
+                ).add_extension(ca_key_usage, critical=True
                 ).sign(ca_key, hashes.SHA256())
 
             self.ca.cert = ca_cert.public_bytes(Encoding.PEM).decode('utf-8')
@@ -194,14 +210,30 @@ class Registry(msgspec.Struct):
             host_san = x509.SubjectAlternativeName([
                 x509.DNSName(host)
             ])
+            ca_ski = ca_cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier).value
+            key_usage = x509.KeyUsage(
+                    digital_signature=True,
+                    key_encipherment=True,
+                    content_commitment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=False,
+                    crl_sign=False,
+                    encipher_only=False,
+                    decipher_only=False )
+
             now = datetime.now(UTC)
             host_cert = x509.CertificateBuilder().subject_name(host_subject
                 ).issuer_name(ca_cert.subject
-                ).add_extension(host_san, critical=False
                 ).public_key(host_key.public_key()
                 ).serial_number(x509.random_serial_number()
                 ).not_valid_before(now
                 ).not_valid_after(now + timedelta(days=365)  # Expires after 1 year
+                ).add_extension(host_san, critical=False
+                ).add_extension(x509.SubjectKeyIdentifier.from_public_key(host_key.public_key()), critical=False
+                ).add_extension(x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(ca_ski), critical=False
+                ).add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]), critical=False
+                ).add_extension(key_usage, critical=True
                 ).sign(ca_key, hashes.SHA256())
             ret.cert = host_cert.public_bytes(Encoding.PEM).decode('utf-8')
 
