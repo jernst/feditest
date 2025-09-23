@@ -236,6 +236,7 @@ def load_default_node_drivers() -> None:
                'feditest.nodedrivers.sandbox.SandboxMultClientDriver_ImplementationA',
                'feditest.nodedrivers.sandbox.SandboxMultServerDriver_Implementation1',
                'feditest.nodedrivers.sandbox.SandboxMultServerDriver_Implementation2Faulty',
+               'feditest.nodedrivers.ubos.GenericUbosNodeDriver',
                'feditest.nodedrivers.wordpress.WordPressPlusPluginsSaasNodeDriver',
                'feditest.nodedrivers.wordpress.ubos.WordPressPlusPluginsUbosNodeDriver']:
 

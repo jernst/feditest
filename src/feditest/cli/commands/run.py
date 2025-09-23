@@ -7,6 +7,7 @@ from typing import cast
 
 import feditest
 from feditest.cli.utils import (
+    DEFAULT_CONSTELLATION_FILE,
     add_filter_regex_argument,
     add_nodedriversdir_argument,
     add_test_argument,
@@ -109,7 +110,7 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     # test plan options. We do not use argparse groups, as the situation is more complicated than argparse seems to support
     parser.add_argument('--name', default=None, required=False, help='Name of the generated test plan')
     parser.add_argument('--testplan', help='Name of the file that contains the test plan to run')
-    parser.add_argument('--constellation', action='append', help='File(s) each containing a JSON fragment defining a constellation')
+    parser.add_argument('--constellation', action='append', help=f'File(s) each containing a JSON fragment defining a constellation. Fallback default is { DEFAULT_CONSTELLATION_FILE }')
     parser.add_argument('--session', '--session-template', required=False, help='File(s) each containing a JSON fragment defining a test session')
     parser.add_argument('--node', action='append',
                         help="Use <role>=<file> to specify that the node definition in 'file' is supposed to be used for constellation role 'role'")

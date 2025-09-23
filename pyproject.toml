@@ -5,8 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "feditest"
-base_version = "0.6"
-dynamic = ["version"]
+version = "0.6.1"
 authors = [
   { name="Johannes Ernst", email="git@j12t.org" },
   { name="Steve Bate", email="svc-github@stevebate.net" }
@@ -32,13 +31,10 @@ dependencies = [
   "beautifulsoup4"
 ]
 
-description = "Test framework to test distributed, heterogeneous systems with complex protocols such as the Fediverse"
+description = "Framework to test distributed, heterogeneous systems with complex protocols such as the Fediverse"
 readme = "README-PyPI.md"
 
-# We develop on 3.11, so we can support debian 12 (including Raspberry PI OS) systems,
-# which have not been upgraded to 3.12 yet.
-requires-python = ">=3.11"
-# We really want 3.12 so we can use @override
+requires-python = ">=3.13"
 # Do not specify an upper boundary, see https://github.com/fediverse-devnet/feditest/issues/412
 
 classifiers = [
@@ -63,7 +59,11 @@ exclude = [
     "docs/"
 ]
 
-[tool.hatch.metadata.hooks.custom]
+[tool.hatch.build.targets.wheel]
+packages = ["src/feditest"]
+
+
+# [tool.hatch.metadata.hooks.custom]
 # Empty: https://hatch.pypa.io/dev/how-to/config/dynamic-metadata/
 
 [tool.pylint."MESSAGES CONTROL"]

@@ -18,6 +18,7 @@ from feditest.nodedrivers import (
     APP_VERSION_PAR,
     HOSTNAME_PAR,
     AccountManager,
+    DefaultAccountManager,
     Node,
     NodeConfiguration,
     NodeDriver
@@ -27,9 +28,16 @@ from feditest.reporting import error, trace, warning
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeParameter, TestPlanNodeParameterMalformedError, TestPlanNodeParameterRequiredError
 from feditest.utils import email_validate
 
+
 """
 There is no UbosNode: all relevant info is in the UbosNodeConfiguration.
 """
+
+CONTEXT_PAR = TestPlanNodeParameter(
+    'context',
+    """Context path of the app""",
+    validate = lambda s: not s or re.fullmatch(r'^/([^?#]*)$', s)
+)
 
 SITEID_PAR = TestPlanNodeParameter(
     'siteid',
@@ -273,13 +281,22 @@ class UbosNodeConfiguration(NodeConfiguration):
 
 
     @property
-    def admin_email(self) -> str:
-        return self._admin_email
+    def context(self) -> str | None:
+        return self._appconfigjson['context'] if 'context' in self._appconfigjson else None
 
 
     @property
-    def admin_username(self) -> str:
-        return self._admin_username
+    def fullcontext(self) -> str | None:
+        ret = 'https://'
+
+        if self._hostname:
+            ret += self._hostname
+        
+        context = self.context
+        if context:
+            ret += context
+
+        return ret
 
 
     @property
@@ -288,8 +305,35 @@ class UbosNodeConfiguration(NodeConfiguration):
 
 
     @property
+    def admin_username(self) -> str:
+        return self._admin_username
+
+
+    @property
     def admin_credential(self) -> str:
         return self._admin_credential
+
+
+    @property
+    def admin_email(self) -> str:
+        return self._admin_email
+
+
+    def get_customizationpoint_value(self, name: str) -> Any:
+        customizationpoints_json = self._appconfigjson.get('customizationpoints')
+        if customizationpoints_json is None:
+            return None
+
+        customizationpoints_for_app_json = customizationpoints_json.get(self.app)
+        if customizationpoints_for_app_json is None:
+            return None
+
+        customizationpoint_json = customizationpoints_for_app_json.get(name)
+        if customizationpoint_json is None:
+            return None
+
+        ret = customizationpoint_json.get('value')
+        return ret
 
 
 class UbosNodeDeployConfiguration(UbosNodeConfiguration):
@@ -621,3 +665,27 @@ class UbosNodeDriver(NodeDriver):
         cmd = f'sudo bash -c "[[ ! -e { filename } ]] || rm { filename } && update-ca-trust extract"'
         if self._exec_shell(cmd, rshcmd, root_cert).returncode:
             error(f'Failed to execute cmd {cmd}')
+
+
+class GenericUbosNodeDriver(UbosNodeDriver):
+    # Python 3.12 @override
+    def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> UbosNode:
+        return  UbosNode(rolename, config, account_manager)
+
+
+    # Python 3.12 @override
+    def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
+        # appid = test_plan_node.parameter_or_raise(APPID_PAR)
+        appid = test_plan_node.parameter_or_raise(APP_PAR)
+        context = test_plan_node.parameter(CONTEXT_PAR) or ''
+
+        return (
+            UbosNodeConfiguration.create_from_node_in_testplan(
+                    test_plan_node,
+                    self,
+                    {
+                        "appid" : appid,
+                        "context" : context
+                    } ),
+            DefaultAccountManager()
+        )

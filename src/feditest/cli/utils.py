@@ -3,6 +3,7 @@ Utility functions used by the CLI commands.
 """
 
 from argparse import ArgumentError, ArgumentParser, Namespace
+import os.path
 import re
 
 from msgspec import ValidationError
@@ -10,6 +11,9 @@ from msgspec import ValidationError
 import feditest
 from feditest.tests import Test
 from feditest.testplan import TestPlan, TestPlanConstellation, TestPlanConstellationNode, TestPlanSessionTemplate, TestPlanTestSpec
+
+
+DEFAULT_CONSTELLATION_FILE = 'default.constellation.json'
 
 
 def create_plan_from_testplan(args: Namespace) -> TestPlan:
@@ -94,11 +98,17 @@ def create_session_template_from_tests(args: Namespace) -> TestPlanSessionTempla
 
 
 def create_constellations(args: Namespace) -> list[TestPlanConstellation]:
+    constellations : list[TestPlanConstellation] | None = None
     if args.constellation:
         constellations = create_constellations_from_files(args)
     else:
         constellation = create_constellation_from_nodes(args)
-        constellations = [ constellation ]
+        if constellation is None:
+            constellation = create_constellation_from_default()
+        if constellation is not None:
+            constellations = [ constellation ]
+    if not constellations:
+        raise ArgumentError(None, 'No constellation specified')
     return constellations
 
 
@@ -115,7 +125,7 @@ def create_constellations_from_files(args: Namespace) -> list[TestPlanConstellat
     return constellations
 
 
-def create_constellation_from_nodes(args: Namespace) -> TestPlanConstellation:
+def create_constellation_from_nodes(args: Namespace) -> TestPlanConstellation | None:
     # Don't check for empty nodes: we need that for testing feditest
     roles : dict[str, TestPlanConstellationNode | None] = {}
     if args.node:
@@ -131,9 +141,19 @@ def create_constellation_from_nodes(args: Namespace) -> TestPlanConstellation:
                 raise ArgumentError(None, f'Filename component must not be empty: "{ nodepair }".')
             node = TestPlanConstellationNode.load(nodefile)
             roles[rolename] = node
+    if roles:
+        return TestPlanConstellation(roles)
+    return None;
 
-    constellation = TestPlanConstellation(roles)
-    return constellation
+
+def create_constellation_from_default() -> TestPlanConstellation | None:
+    if not os.path.exists(DEFAULT_CONSTELLATION_FILE) or not os.path.isfile(DEFAULT_CONSTELLATION_FILE):
+        return None
+
+    try:
+        return TestPlanConstellation.load(DEFAULT_CONSTELLATION_FILE)
+    except ValidationError as e:
+        raise ArgumentError(None, f'Default constellation file { DEFAULT_CONSTELLATION_FILE }: { e }')
 
 
 def _help_for_default_dirs(dirs: list[str]) -> str:
