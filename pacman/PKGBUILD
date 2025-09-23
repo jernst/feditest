@@ -1,0 +1,54 @@
+url="https://feditest.org/"
+developer=${url}
+maintainer=${url}
+pkgname=feditest
+pkgver=0.6
+pkgrel=1
+pkgdesc="Framework to test distributed, heterogeneous systems with complex protocols such as the Fediverse"
+arch=('any')
+license=('MIT')
+depends=(
+    'python'
+    'python-cryptography'
+    'python-httpx'
+    'python-langcodes'
+    'python-msgspec'
+    'python-multidict'
+    'python-jinja'
+    'python-pyhamcrest'
+    'python-pytest'
+    'python-requests'
+)
+options=('!strip')
+
+makedepends=(
+    'python-build'
+    'python-hatchling'
+    'python-installer'
+)
+
+prepare() {
+    # Update pyproject.toml
+    pwd
+    perl -pi -e 's/^(name\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgname"'${3}/' ../../pyproject.toml
+    perl -pi -e 's/^(version\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgver"'${3}/' ../../pyproject.toml
+    perl -pi -e 's/^(description\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgdesc"'${3}/' ../../pyproject.toml
+
+    # We do this manually as I can't find a way of convincing makepkg to recursively copy a local directory with source=()
+    cd "${srcdir}"
+    [ -d "${pkgname}-${pkgver}" ] || mkdir "${pkgname}-${pkgver}"
+
+    cd "${pkgname}-${pkgver}"
+    rsync -a --delete ../../../{README-PyPI.md,pyproject.toml,src} ./
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    python -m build --wheel --no-isolation
+}
+
+package() {
+# Code
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    python -m installer --destdir="${pkgdir}" dist/*.whl
+}
