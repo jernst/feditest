@@ -29,7 +29,6 @@ makedepends=(
 
 prepare() {
     # Update pyproject.toml
-    pwd
     perl -pi -e 's/^(name\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgname"'${3}/' ../../pyproject.toml
     perl -pi -e 's/^(version\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgver"'${3}/' ../../pyproject.toml
     perl -pi -e 's/^(description\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgdesc"'${3}/' ../../pyproject.toml
