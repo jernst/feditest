@@ -109,6 +109,7 @@ def mastodon_api_invoke_get_or_delete(
             curl += f' -H "{ key }: { value }"'
         trace(f'Mastodon API call as curl: { curl }')
 
+    response = None
     response_json = None
     try :
         if 'get' == method:
@@ -123,8 +124,10 @@ def mastodon_api_invoke_get_or_delete(
     finally:
         if response_json:
             trace(f'Mastodon API call returns { response }: { json.dumps(response_json) }')
-        else:
+        elif response:
             trace(f'Mastodon API call returns { response }: Not a JSON response: { response.text }')
+        else:
+            trace('Mastodon API call returns no response')
 
 
 def mastodon_api_invoke_post_or_put(
@@ -154,6 +157,7 @@ def mastodon_api_invoke_post_or_put(
                 curl += f' -F "{ key }={ value }"'
         trace(f'Mastodon API call as curl: { curl }')
 
+    response = None
     response_json = None
     try :
         if 'post' == method:
@@ -168,8 +172,10 @@ def mastodon_api_invoke_post_or_put(
     finally:
         if response_json:
             trace(f'Mastodon API call returns { response }: { json.dumps(response_json) }')
-        else:
+        elif response:
             trace(f'Mastodon API call returns { response }: Not a JSON response: { response.text }')
+        else:
+            trace('Mastodon API call returns no response')
 
 
 @dataclass
@@ -635,13 +641,13 @@ class NodeWithMastodonAPI(FediverseNode):
 
 
     # Python 3.12 @override
-    def make_follow_accept(self, actor_acct_uri: str, follower_actor_acct_uri: str) -> None:
-        super().make_follow_accept(actor_acct_uri, follower_actor_acct_uri) # FIXME
+    def make_follow_accept(self, actor_acct_uri: str, would_be_follower_actor_acct_uri: str) -> None:
+        super().make_follow_accept(actor_acct_uri, would_be_follower_actor_acct_uri) # FIXME
 
 
     # Python 3.12 @override
-    def make_follow_reject(self, actor_acct_uri: str, follower_actor_acct_uri: str) -> None:
-        super().make_follow_reject(actor_acct_uri, follower_actor_acct_uri) # FIXME
+    def make_follow_reject(self, actor_acct_uri: str, would_be_follower_actor_acct_uri: str) -> None:
+        super().make_follow_reject(actor_acct_uri, would_be_follower_actor_acct_uri) # FIXME
 
 
     # Python 3.12 @override

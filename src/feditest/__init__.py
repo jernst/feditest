@@ -318,7 +318,7 @@ def _assert_bool(
 
 
 def assert_that(
-    actual_or_assertion: T,
+    actual_or_assertion: object,
     matcher=None,
     reason="",
     spec_level: SpecLevel | None = None,

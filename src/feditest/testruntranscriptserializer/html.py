@@ -1,9 +1,9 @@
-# import contextlib
+import datetime
 import html
 import os.path
 import re
 import shutil
-from typing import Any, Iterator
+from typing import Any, Iterator, cast
 
 import jinja2
 
@@ -87,10 +87,12 @@ class HtmlRunTranscriptSerializer(TestRunTranscriptSerializer):
             get_results_for=_get_results_for,
             remove_white=lambda s: re.sub("[ \t\n\a]", "_", str(s)),
             permit_line_breaks_in_identifier=lambda s: re.sub(
-                r"(\.|::)", r"<wbr>\1", s
+                r"(\.|::)",
+                r"<wbr>\1",
+                cast(str, s) # Make linter happy
             ),
-            local_name_with_tooltip=lambda n: f'<span title="{ html.escape(n) }">{ n.split(".")[-1] }</span>',
-            format_timestamp=lambda ts: ts.strftime("%Y:%m:%d-%H:%M:%S.%fZ") if ts else "",
+            local_name_with_tooltip=lambda n: f'<span title="{ html.escape(cast(str,n)) }">{ cast(str,n).split(".")[-1] }</span>',
+            format_timestamp=lambda ts: cast(datetime.datetime, ts).strftime("%Y:%m:%d-%H:%M:%S.%fZ") if ts else "",
             format_duration=lambda s: str(s), # makes it easier to change in the future
             len=len
         )

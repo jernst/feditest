@@ -29,14 +29,14 @@ class SandboxMultServer(Node):
         raise NotImplementedByNodeError(self, SandboxMultServer.mult)
 
 
-    def start_logging(self):
+    def start_logging(self) -> None:
         """
         Activate logging of mult() operations
         """
         raise NotImplementedByNodeError(self, SandboxMultServer.start_logging)
 
 
-    def get_and_clear_log(self) -> List[SandboxLogEvent]:
+    def get_and_clear_log(self) -> List[SandboxLogEvent] | None:
         """
         Stop logging of mult() operations, return what has been logged so far
         and clear the log

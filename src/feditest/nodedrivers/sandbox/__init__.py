@@ -67,11 +67,11 @@ class SandboxMultServer_Implementation1(SandboxMultServer):
         return c
 
 
-    def start_logging(self):
+    def start_logging(self) -> None:
         self._log = []
 
 
-    def get_and_clear_log(self):
+    def get_and_clear_log(self) -> List[SandboxLogEvent] | None:
         ret = self._log
         self._log = None
         return ret

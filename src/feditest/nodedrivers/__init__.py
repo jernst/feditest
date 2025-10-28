@@ -34,15 +34,15 @@ class Account(ABC):
     """
     def __init__(self, role: str | None):
         self._role = role
-        self._node : 'Node' | None = None
+        self._node : 'Node | None' = None
 
 
     @property
-    def role(self):
+    def role(self) -> str | None:
         return self._role
 
 
-    def set_node(self, node: 'Node'):
+    def set_node(self, node: 'Node') -> None:
         """
         Set the Node at which this is an Account. This is invoked exactly once after the Node
         has been instantiated (the Account is instantiated earlier).
@@ -53,8 +53,11 @@ class Account(ABC):
 
 
     @property
-    def node(self):
-        return self._node
+    def node(self) -> 'Node':
+        if self._node:
+            return self._node
+        else:
+            raise Exception('Invalid initialization')
 
 
 class NonExistingAccount(ABC):
@@ -64,15 +67,15 @@ class NonExistingAccount(ABC):
     """
     def __init__(self, role: str | None):
         self._role = role
-        self._node : 'Node' | None = None
+        self._node : 'Node | None' = None
 
 
     @property
-    def role(self):
+    def role(self) -> str | None:
         return self._role
 
 
-    def set_node(self, node: 'Node'):
+    def set_node(self, node: 'Node') -> None:
         """
         Set the Node at which this is a NonExistingAccount. This is invoked exactly once after the Node
         has been instantiated (the NonExistingAccount is instantiated earlier).
@@ -82,8 +85,11 @@ class NonExistingAccount(ABC):
         self._node = node
 
     @property
-    def node(self):
-        return self._node
+    def node(self) -> 'Node':
+        if self._node:
+            return self._node
+        else:
+            raise Exception('Invalid initialization')
 
 
 class OutOfAccountsException(Exception):
@@ -109,7 +115,7 @@ class AccountManager(ABC):
     TestPlan, or dynamically provisioning accounts etc.
     """
     @abstractmethod
-    def set_node(self, node: 'Node'):
+    def set_node(self, node: 'Node') -> None:
         """
         Set the Node to which this AccountManager belongs. This is invoked exactly once after the Node
         has been instantiated (the AccountManager is instantiated earlier).
