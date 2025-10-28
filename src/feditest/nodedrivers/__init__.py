@@ -4,7 +4,7 @@ Define interfaces to interact with the nodes in the constellation being tested
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import Any, cast, final
+from typing import Any, cast, final, override
 
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeParameter, TestPlanNodeAccountField, TestPlanNodeNonExistingAccountField
 from feditest.reporting import info
@@ -204,7 +204,7 @@ class AbstractAccountManager(AccountManager):
         self._node : Node | None = None # the Node this AccountManager belongs to. Set once the Node has been instantiated
 
 
-    # Python 3.12 @override
+    @override
     def set_node(self, node: 'Node') -> None:
         if self._node:
             raise ValueError('Have Node already')
@@ -220,12 +220,12 @@ class AbstractAccountManager(AccountManager):
             non_existing_account.set_node(self._node)
 
 
-    # Python 3.12 @override
+    @override
     def get_account_by_role(self, role: str | None = None) -> Account | None:
         return self._accounts_allocated_to_role.get(role)
 
 
-    # Python 3.12 @override
+    @override
     def obtain_account_by_role(self, role: str | None = None) -> Account:
         ret = self._accounts_allocated_to_role.get(role)
         if not ret:
@@ -243,12 +243,12 @@ class AbstractAccountManager(AccountManager):
         raise OutOfAccountsException()
 
 
-    # Python 3.12 @override
+    @override
     def get_non_existing_account_by_role(self, role: str | None = None) -> NonExistingAccount | None:
         return self._non_existing_accounts_allocated_to_role.get(role)
 
 
-    # Python 3.12 @override
+    @override
     def obtain_non_existing_account_by_role(self, role: str | None = None) -> NonExistingAccount:
         ret = self._non_existing_accounts_allocated_to_role.get(role)
         if not ret:
@@ -266,7 +266,7 @@ class AbstractAccountManager(AccountManager):
         raise OutOfNonExistingAccountsException()
 
 
-    # Python 3.12 @override
+    @override
     def get_account_by_match(self, match_function: Callable[[Account],bool]) -> Account | None:
         for account in self._accounts_allocated_to_role.values():
             if match_function(account):
@@ -274,7 +274,7 @@ class AbstractAccountManager(AccountManager):
         return None
 
 
-    # Python 3.12 @override
+    @override
     def get_non_existing_account_by_match(self, match_function: Callable[[NonExistingAccount],bool]) -> NonExistingAccount | None:
         for non_existing_account in self._non_existing_accounts_allocated_to_role.values():
             if match_function(non_existing_account):

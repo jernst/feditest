@@ -1,7 +1,7 @@
 """
 """
 
-from typing import Any, cast
+from typing import Any, cast, override
 
 from feditest.nodedrivers import APP_PAR, APP_VERSION_PAR, HOSTNAME_PAR
 from feditest.nodedrivers.mastodon import NodeWithMastodonApiConfiguration
@@ -65,7 +65,7 @@ class MastodonUbosNodeConfiguration(UbosNodeDeployConfiguration, NodeWithMastodo
         self._verify_tls_certificate = True
 
 
-    # Python 3.12 @override
+    @override
     @staticmethod
     def create_from_node_in_testplan(
         test_plan_node: TestPlanConstellationNode,

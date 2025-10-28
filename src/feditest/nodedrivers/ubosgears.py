@@ -11,7 +11,7 @@ import secrets
 import subprocess
 import shutil
 import string
-from typing import Any, cast
+from typing import Any, cast, override
 
 from feditest.nodedrivers import (
     APP_PAR,
@@ -480,13 +480,13 @@ class UbosNodeDriver(NodeDriver):
     """
     A general-purpose NodeDriver for Nodes provisioned through UBOS Gears.
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_parameters() -> list[TestPlanNodeParameter]:
         return [ SITEID_PAR, APPCONFIGID_PAR, APP_PAR, HOSTNAME_PAR, ADMIN_USERID_PAR, ADMIN_USERNAME_PAR, ADMIN_CREDENTIAL_PAR, ADMIN_EMAIL_PAR, START_DELAY_PAR, BACKUPFILE_PAR, BACKUP_APPCONFIGID_PAR ]
 
 
-    # Python 3.12 @override
+    @override
     def _provision_node(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None) -> Node:
         """
         The UBOS driver knows how to provision a node either by deploying a UBOS Site JSON file
@@ -668,12 +668,12 @@ class UbosNodeDriver(NodeDriver):
 
 
 class GenericUbosNodeDriver(UbosNodeDriver):
-    # Python 3.12 @override
+    @override
     def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> UbosNode:
         return  UbosNode(rolename, config, account_manager)
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         # appid = test_plan_node.parameter_or_raise(APPID_PAR)
         appid = test_plan_node.parameter_or_raise(APP_PAR)

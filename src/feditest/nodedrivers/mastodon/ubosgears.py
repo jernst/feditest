@@ -5,7 +5,7 @@ import re
 import secrets
 import string
 import subprocess
-from typing import cast
+from typing import cast, override
 
 from feditest import nodedriver
 from feditest.nodedrivers import (
@@ -37,7 +37,6 @@ from feditest.protocols.fediverse import (
     USERID_ACCOUNT_FIELD,
     USERID_NON_EXISTING_ACCOUNT_FIELD
 )
-
 from feditest.reporting import error, trace
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeAccountField, TestPlanNodeNonExistingAccountField
 
@@ -46,7 +45,7 @@ class MastodonUbosAccountManager(DefaultAccountManager):
     """
     Knows how to provision new accounts in Mastodon
     """
-    # Python 3.12 @override
+    @override
     def set_node(self, node: Node) -> None:
         """
         We override this so we can insert the admin account in the list of accounts, now that the Node has been instantiated.
@@ -64,7 +63,7 @@ class MastodonUbosNode(MastodonNode, UbosNode):
     """
     A Mastodon Node running on UBOS. This means we know how to interact with it exactly.
     """
-    # Python 3.12 @override
+    @override
     def provision_account_for_role(self, role: str | None = None) -> Account | None:
         trace('Provisioning new user')
         userid = self._generate_candidate_userid()
@@ -120,19 +119,19 @@ class MastodonUbosNodeDriver(UbosNodeDriver):
     """
     Knows how to instantiate Mastodon via UBOS.
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_account_fields() -> list[TestPlanNodeAccountField]:
         return [ USERID_ACCOUNT_FIELD, EMAIL_ACCOUNT_FIELD, PASSWORD_ACCOUNT_FIELD, OAUTH_TOKEN_ACCOUNT_FIELD, ROLE_ACCOUNT_FIELD ]
 
 
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_non_existing_account_fields() -> list[TestPlanNodeNonExistingAccountField]:
         return [ USERID_NON_EXISTING_ACCOUNT_FIELD, ROLE_NON_EXISTING_ACCOUNT_FIELD ]
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         accounts : list[Account] = []
         if test_plan_node.accounts:
@@ -174,6 +173,6 @@ class MastodonUbosNodeDriver(UbosNodeDriver):
             MastodonUbosAccountManager(accounts, non_existing_accounts)
         )
 
-    # Python 3.12 @override
+    @override
     def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> Node:
         return MastodonUbosNode(rolename, config, account_manager)

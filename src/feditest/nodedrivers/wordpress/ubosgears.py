@@ -2,7 +2,7 @@
 """
 
 import os
-from typing import cast
+from typing import cast, override
 
 from feditest import nodedriver
 from feditest.nodedrivers import (
@@ -31,7 +31,7 @@ class WordPressUbosAccountManager(DefaultAccountManager):
     """
     Knows how to provision new accounts in WordPress
     """
-    # Python 3.12 @override
+    @override
     def set_node(self, node: Node) -> None:
         """
         We override this so we can insert the admin account in the list of accounts, now that the Node has been instantiated.
@@ -49,7 +49,7 @@ class WordPressPlusPluginsUbosNode(WordPressPlusPluginsNode, UbosNode):
     """
     A WordPress+plugins Node running on UBOS. This means we know how to interact with it exactly.
     """
-    # Python 3.12 @override
+    @override
     def provision_account_for_role(self, role: str | None = None) -> Account | None:
         trace('Provisioning new user')
         raise NotImplementedError('FIXME')
@@ -59,7 +59,7 @@ class WordPressPlusPluginsUbosNode(WordPressPlusPluginsNode, UbosNode):
         raise NotImplementedError('FIXME')
 
 
-    # Python 3.12 @override
+    @override
     def _provision_oauth_token_for(self, account: WordPressAccount, oauth_client_id: str) -> str :
         # Code from here: https://wordpress.org/support/topic/programmatically-obtaining-oauth-token-for-testing/
         # $desired_token = '123';
@@ -96,19 +96,19 @@ class WordPressPlusPluginsUbosNodeDriver(UbosNodeDriver):
     """
     Knows how to instantiate Mastodon via UBOS.
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_account_fields() -> list[TestPlanNodeAccountField]:
         return [ USERID_ACCOUNT_FIELD, OAUTH_TOKEN_ACCOUNT_FIELD, ROLE_ACCOUNT_FIELD ]
 
 
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_non_existing_account_fields() -> list[TestPlanNodeNonExistingAccountField]:
         return [ USERID_NON_EXISTING_ACCOUNT_FIELD, ROLE_NON_EXISTING_ACCOUNT_FIELD ]
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         accounts : list[Account] = []
         if test_plan_node.accounts:
@@ -153,6 +153,6 @@ class WordPressPlusPluginsUbosNodeDriver(UbosNodeDriver):
             WordPressUbosAccountManager(accounts, non_existing_accounts)
         )
 
-    # Python 3.12 @override
+    @override
     def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> Node:
         return WordPressPlusPluginsUbosNode(rolename, config, account_manager)

@@ -2,6 +2,8 @@
 A NodeDriver that supports all protocols but doesn't automate anything.
 """
 
+from typing import override
+
 from feditest import nodedriver
 from feditest.nodedrivers import AccountManager, Node, NodeConfiguration
 from feditest.nodedrivers.fallback.fediverse import AbstractFallbackFediverseNodeDriver, FallbackFediverseNode
@@ -14,7 +16,7 @@ class FediverseManualNodeDriver(AbstractFallbackFediverseNodeDriver):
     """
     A NodeDriver that supports all web server-side protocols but doesn't automate anything.
     """
-    # Python 3.12 @override
+    @override
     def _provision_node(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None) -> FediverseNode:
         prompt_user(
                 f'Manually provision the Node for constellation role { rolename }'
@@ -22,6 +24,6 @@ class FediverseManualNodeDriver(AbstractFallbackFediverseNodeDriver):
         return FallbackFediverseNode(rolename, config, account_manager)
 
 
-    # Python 3.12 @override
+    @override
     def _unprovision_node(self, node: Node) -> None:
         prompt_user(f'Manually unprovision the Node for constellation role { node.rolename } and hit return when done: ')

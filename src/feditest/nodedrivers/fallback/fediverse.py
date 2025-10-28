@@ -2,7 +2,7 @@
 Fallback implementation for FediverseNode
 """
 
-from typing import cast
+from typing import cast, override
 
 from feditest.nodedrivers import (
     Account,
@@ -41,7 +41,7 @@ from feditest.utils import (
 
 
 class FallbackFediverseNode(FediverseNode):
-    # Python 3.12 @override
+    @override
     def provision_account_for_role(self, role: str | None = None) -> Account | None:
         userid = prompt_user_parse_validate(
                 f'Node { self }:'
@@ -58,7 +58,7 @@ class FallbackFediverseNode(FediverseNode):
         return FediverseNonExistingAccount(role, userid)
 
 
-    # Python 3.12 @override
+    @override
     def obtain_actor_acct_uri(self, rolename: str | None = None) -> str:
         if not self.account_manager:
             raise OutOfAccountsException('No AccountManager set')
@@ -66,7 +66,7 @@ class FallbackFediverseNode(FediverseNode):
         return account.actor_acct_uri
 
 
-    # Python 3.12 @override
+    @override
     def obtain_non_existing_actor_acct_uri(self, rolename: str | None = None ) -> str:
         if not self.account_manager:
             raise OutOfAccountsException('No AccountManager set')
@@ -74,7 +74,7 @@ class FallbackFediverseNode(FediverseNode):
         return non_account.actor_acct_uri
 
 
-    # Python 3.12 @override
+    @override
     def make_follow(self, actor_acct_uri: str, to_follow_actor_acct_uri: str) -> None:
         prompt_user(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" follow actor "{ to_follow_actor_acct_uri }"'
@@ -87,7 +87,7 @@ class FallbackFediverseNode(FediverseNode):
                 + ' and hit return when done: ')
 
 
-    # Python 3.12 @override
+    @override
     def actor_is_following_actor(self, actor_acct_uri: str, leader_actor_acct_uri: str) -> bool:
         answer = prompt_user_parse_validate(
                 f'On FediverseNode "{ self.hostname }", is actor "{ actor_acct_uri }" following actor "{ leader_actor_acct_uri }"?'
@@ -96,7 +96,7 @@ class FallbackFediverseNode(FediverseNode):
         return answer
 
 
-    # Python 3.12 @override
+    @override
     def actor_is_followed_by_actor(self, actor_acct_uri: str, follower_actor_acct_uri: str) -> bool:
         answer = prompt_user_parse_validate(
                 f'On FediverseNode "{ self.hostname }", is actor "{ actor_acct_uri }" being followed by actor "{ follower_actor_acct_uri }"?'
@@ -106,7 +106,7 @@ class FallbackFediverseNode(FediverseNode):
 
     # All other follow-related methods: We leave the NotImplementedByNodeError raised by the superclass until we have a better idea :-)
 
-    # Python 3.12 @override
+    @override
     def make_create_note(self, actor_acct_uri: str, content: str, deliver_to: list[str] | None = None) -> str:
         if deliver_to :
             return prompt_user_parse_validate(
@@ -122,7 +122,7 @@ class FallbackFediverseNode(FediverseNode):
                 parse_validate=https_uri_validate)
 
 
-    # Python 3.12 @override
+    @override
     def update_note(self, actor_acct_uri: str, note_uri: str, new_content: str) -> None:
         prompt_user(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" update the note at "{ note_uri }"'
@@ -130,14 +130,14 @@ class FallbackFediverseNode(FediverseNode):
                 + 'and hit return when done: ')
 
 
-    # Python 3.12 @override
+    @override
     def delete_object(self, actor_acct_uri: str, object_uri: str) -> None:
         prompt_user(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" delete the object at "{ object_uri }"'
                 + ' and hit return when done:')
 
 
-    # Python 3.12 @override
+    @override
     def make_reply_note(self, actor_acct_uri, to_be_replied_to_object_uri: str, reply_content: str) -> str:
         return prompt_user_parse_validate(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" reply to object with "{ to_be_replied_to_object_uri }"'
@@ -146,35 +146,35 @@ class FallbackFediverseNode(FediverseNode):
                 parse_validate=https_uri_validate)
 
 
-    # Python 3.12 @override
+    @override
     def like_object(self, actor_acct_uri: str, object_uri: str) -> None:
         prompt_user(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" like the object at "{ object_uri }"'
                 + ' and hit return when done: ')
 
 
-    # Python 3.12 @override
+    @override
     def unlike_object(self, actor_acct_uri: str, object_uri: str) -> None:
         prompt_user(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" unlike the object at "{ object_uri }"'
                 + ' and hit return when done: ')
 
 
-    # Python 3.12 @override
+    @override
     def announce_object(self, actor_acct_uri: str, object_uri: str) -> None:
         prompt_user(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" announce/reblog/boost the object at "{ object_uri }"'
                 + ' and hit return when done: ')
 
 
-    # Python 3.12 @override
+    @override
     def unannounce_object(self, actor_acct_uri: str, object_uri: str) -> None:
         prompt_user(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" unannounce/undo reblog/undo boost the object at "{ object_uri }"'
                 + ' and hit return when done.')
 
 
-    # Python 3.12 @override
+    @override
     def actor_has_received_object(self, actor_acct_uri: str, object_uri: str) -> str | None:
         answer = prompt_user(
                 f'On FediverseNode "{ self.hostname }", has actor "{ actor_acct_uri }" received the object "{ object_uri }"?'
@@ -182,14 +182,14 @@ class FallbackFediverseNode(FediverseNode):
         return answer if answer else None
 
 
-    # Python 3.12 @override
+    @override
     def note_content(self, actor_acct_uri: str, note_uri: str) -> str | None:
         answer = prompt_user(
                 f'On FediverseNode "{ self.hostname }", have actor "{ actor_acct_uri }" access note "{ note_uri }" and enter its content: ')
         return answer if answer else None
 
 
-    # Python 3.12 @override
+    @override
     def object_author(self, actor_acct_uri: str, object_uri: str) -> str | None:
         answer = prompt_user_parse_validate(
                 f'On FediverseNode "{ self.hostname }", have actor "{ actor_acct_uri }" access object "{ object_uri }" and enter the acct URI of the object\'s author: ',
@@ -197,7 +197,7 @@ class FallbackFediverseNode(FediverseNode):
         return answer
 
 
-    # Python 3.12 @override
+    @override
     def direct_replies_to_object(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         answer = prompt_user_parse_validate(
                 f'On FediverseNode "{ self.hostname }", have actor "{ actor_acct_uri }" access object "{ object_uri }"'
@@ -206,7 +206,7 @@ class FallbackFediverseNode(FediverseNode):
         return answer.split()
 
 
-    # Python 3.12 @override
+    @override
     def object_likers(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         answer = prompt_user_parse_validate(
                 f'On FediverseNode "{ self.hostname }", have actor "{ actor_acct_uri }" access object "{ object_uri }"'
@@ -215,7 +215,7 @@ class FallbackFediverseNode(FediverseNode):
         return answer.split()
 
 
-    # Python 3.12 @override
+    @override
     def object_announcers(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         answer = prompt_user_parse_validate(
                 f'On FediverseNode "{ self.hostname }", have actor "{ actor_acct_uri }" access object "{ object_uri }"'
@@ -226,14 +226,14 @@ class FallbackFediverseNode(FediverseNode):
 
 # From WebFingerServer
 
-    # Python 3.12 @override
+    @override
     def obtain_account_identifier(self, rolename: str | None = None) -> str:
         account_manager = cast(AccountManager, self._account_manager)
         account = cast(FediverseAccount, account_manager.obtain_account_by_role(rolename))
         return account.actor_acct_uri
 
 
-    # Python 3.12 @override
+    @override
     def obtain_non_existing_account_identifier(self, rolename: str | None = None ) -> str:
         account_manager = cast(AccountManager, self._account_manager)
         non_account = cast(FediverseNonExistingAccount, account_manager.obtain_non_existing_account_by_role(rolename))
@@ -249,19 +249,19 @@ class AbstractFallbackFediverseNodeDriver(NodeDriver):
     Abstract superclass of NodeDrivers that support all web server-side protocols but don't
     automate anything.
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_account_fields() -> list[TestPlanNodeAccountField]:
         return [ ROLE_ACCOUNT_FIELD, USERID_ACCOUNT_FIELD ]
 
 
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_non_existing_account_fields() -> list[TestPlanNodeNonExistingAccountField]:
         return [ ROLE_NON_EXISTING_ACCOUNT_FIELD, USERID_NON_EXISTING_ACCOUNT_FIELD ]
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         app = test_plan_node.parameter(APP_PAR)
         app_version = test_plan_node.parameter(APP_VERSION_PAR)

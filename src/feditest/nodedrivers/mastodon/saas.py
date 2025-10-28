@@ -1,7 +1,7 @@
 """
 """
 
-from typing import cast
+from typing import cast, override
 
 from feditest import nodedriver
 from feditest.nodedrivers import (
@@ -49,25 +49,25 @@ class MastodonSaasNodeDriver(NodeDriver):
     """
     Create a Mastodon Node that already runs as SaaS
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_parameters() -> list[TestPlanNodeParameter]:
         return [ APP_PAR, APP_VERSION_PAR, HOSTNAME_PAR, VERIFY_API_TLS_CERTIFICATE_PAR ]
 
 
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_account_fields() -> list[TestPlanNodeAccountField]:
         return [ USERID_ACCOUNT_FIELD, EMAIL_ACCOUNT_FIELD, PASSWORD_ACCOUNT_FIELD, OAUTH_TOKEN_ACCOUNT_FIELD, ROLE_ACCOUNT_FIELD ]
 
 
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_non_existing_account_fields() -> list[TestPlanNodeNonExistingAccountField]:
         return [ USERID_NON_EXISTING_ACCOUNT_FIELD, ROLE_NON_EXISTING_ACCOUNT_FIELD ]
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         app = test_plan_node.parameter_or_raise(APP_PAR, { APP_PAR.name:  'Mastodon' }) # Let user give a more descriptive name if they want to
         app_version = test_plan_node.parameter(APP_VERSION_PAR)
@@ -105,6 +105,6 @@ class MastodonSaasNodeDriver(NodeDriver):
         )
 
 
-    # Python 3.12 @override
+    @override
     def _provision_node(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None) -> FediverseNode:
         return MastodonNode(rolename, config, cast(AccountManager, account_manager))

@@ -2,7 +2,7 @@
 """
 
 import time
-from typing import cast
+from typing import cast, override
 
 from feditest.nodedrivers.mastodon import (
     AccountOnNodeWithMastodonAPI,
@@ -76,7 +76,7 @@ class WordPressAccount(AccountOnNodeWithMastodonAPI):
         return self._mastodon_client
 
 
-    # Python 3.12 @override
+    @override
     @property
     def internal_userid(self) -> int:
         if self._internal_userid >= 0:
@@ -105,7 +105,7 @@ class WordPressPlusPluginsNode(NodeWithMastodonAPI):
         return ret
 
 
-    # Python 3.12 @override
+    @override
     def _run_poor_mans_cron(self) -> None:
         # Seems we need two HTTP GETs
         url = f'https://{ self.hostname }/wp-cron.php?doing_wp_cron'

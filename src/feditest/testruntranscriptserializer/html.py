@@ -3,7 +3,7 @@ import html
 import os.path
 import re
 import shutil
-from typing import Any, Iterator, cast
+from typing import Any, Iterator, cast, override
 
 import jinja2
 
@@ -69,7 +69,7 @@ class HtmlRunTranscriptSerializer(TestRunTranscriptSerializer):
         )
 
 
-    # Python 3.12 @override
+    @override
     def write(self, transcript: TestRunTranscript, dest: str | None):
         if dest is None:
             fatal('Cannot write --html to stdout.')

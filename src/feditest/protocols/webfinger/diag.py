@@ -3,7 +3,7 @@
 
 import json
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, override
 
 from feditest.nodedrivers import NotImplementedByNodeError
 from feditest.protocols.web.diag import HttpRequestResponsePair, WebDiagClient
@@ -495,7 +495,7 @@ class WebFingerDiagClient(WebFingerClient, WebDiagClient):
     """
     A Node that acts as a WebFinger client.
     """
-    # Python 3.12 @override
+    @override
     def perform_webfinger_query(self, resource_uri: str) -> None:
         self.diag_perform_webfinger_query(resource_uri)
 

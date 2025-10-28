@@ -7,7 +7,7 @@ import json
 from dataclasses import dataclass
 import requests
 from requests.exceptions import HTTPError
-from typing import cast, Any
+from typing import Any, cast, override
 from urllib.parse import urlencode
 
 from feditest.nodedrivers import (
@@ -532,7 +532,7 @@ class MastodonUserPasswordAccount(MastodonAccount):
         self._mastodon_client: AuthenticatedMastodonApiClient | None = None # Allocated as needed
 
 
-    # Python 3.12 @override
+    @override
     @property
     def mastodon_client(self) -> AuthenticatedMastodonApiClient:
         if self._mastodon_client is None:
@@ -565,7 +565,7 @@ class MastodonOAuthTokenAccount(MastodonAccount):
         self._mastodon_client: AuthenticatedMastodonApiClient | None = None # Allocated as needed
 
 
-    # Python 3.12 @override
+    @override
     @property
     def mastodon_client(self) -> AuthenticatedMastodonApiClient:
         if self._mastodon_client is None:
@@ -618,21 +618,21 @@ class NodeWithMastodonAPI(FediverseNode):
 
 # From FediverseNode
 
-    # Python 3.12 @override
+    @override
     def obtain_actor_acct_uri(self, rolename: str | None = None) -> str:
         account_manager = cast(AccountManager, self._account_manager)
         account = cast(MastodonAccount, account_manager.obtain_account_by_role(rolename))
         return account.actor_acct_uri
 
 
-    # Python 3.12 @override
+    @override
     def make_follow(self, actor_acct_uri: str, to_follow_actor_acct_uri: str) -> None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         mastodon_client.make_follow(to_follow_actor_acct_uri)
         self._run_poor_mans_cron()
 
 
-    # Python 3.12 @override
+    @override
     def set_auto_accept_follow(self, actor_acct_uri: str, auto_accept_follow: bool = True) -> None:
         if auto_accept_follow:
             return # Default for Mastodon
@@ -640,17 +640,17 @@ class NodeWithMastodonAPI(FediverseNode):
         raise NotImplementedByNodeError(self, NodeWithMastodonAPI.set_auto_accept_follow) # Can't find an API call for this
 
 
-    # Python 3.12 @override
+    @override
     def make_follow_accept(self, actor_acct_uri: str, would_be_follower_actor_acct_uri: str) -> None:
         super().make_follow_accept(actor_acct_uri, would_be_follower_actor_acct_uri) # FIXME
 
 
-    # Python 3.12 @override
+    @override
     def make_follow_reject(self, actor_acct_uri: str, would_be_follower_actor_acct_uri: str) -> None:
         super().make_follow_reject(actor_acct_uri, would_be_follower_actor_acct_uri) # FIXME
 
 
-    # Python 3.12 @override
+    @override
     def make_unfollow(self, actor_acct_uri: str, following_actor_acct_uri: str) -> None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         mastodon_client.make_unfollow(following_actor_acct_uri)
@@ -663,13 +663,13 @@ class NodeWithMastodonAPI(FediverseNode):
         return mastodon_client.actor_is_following_actor(leader_actor_acct_uri)
 
 
-    # Python 3.12 @override
+    @override
     def actor_is_followed_by_actor(self, actor_acct_uri: str, follower_actor_acct_uri: str) -> bool:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         return mastodon_client.actor_is_followed_by_actor(follower_actor_acct_uri)
 
 
-    # Python 3.12 @override
+    @override
     def make_create_note(self, actor_acct_uri: str, content: str, deliver_to: list[str] | None = None) -> str:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.make_create_note(content, deliver_to)
@@ -677,21 +677,21 @@ class NodeWithMastodonAPI(FediverseNode):
         return response['uri']
 
 
-    # Python 3.12 @override
+    @override
     def update_note(self, actor_acct_uri: str, note_uri: str, new_content: str) -> None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         mastodon_client.update_note(note_uri, new_content)
         self._run_poor_mans_cron()
 
 
-    # Python 3.12 @override
+    @override
     def delete_object(self, actor_acct_uri: str, object_uri: str) -> None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         mastodon_client.delete_object(object_uri)
         self._run_poor_mans_cron()
 
 
-    # Python 3.12 @override
+    @override
     def make_reply_note(self, actor_acct_uri: str, to_be_replied_to_object_uri: str, reply_content: str) -> str:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.make_reply_note(to_be_replied_to_object_uri, reply_content)
@@ -699,28 +699,28 @@ class NodeWithMastodonAPI(FediverseNode):
         return response['uri']
 
 
-    # Python 3.12 @override
+    @override
     def like_object(self, actor_acct_uri: str, object_uri: str) -> None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         mastodon_client.like_object(object_uri)
         self._run_poor_mans_cron()
 
 
-    # Python 3.12 @override
+    @override
     def unlike_object(self, actor_acct_uri: str, object_uri: str) -> None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         mastodon_client.unlike_object(object_uri)
         self._run_poor_mans_cron()
 
 
-    # Python 3.12 @override
+    @override
     def announce_object(self, actor_acct_uri: str, object_uri: str) -> None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         mastodon_client.announce_object(object_uri)
         self._run_poor_mans_cron()
 
 
-    # Python 3.12 @override
+    @override
     def unannounce_object(self, actor_acct_uri: str, object_uri: str) -> None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         mastodon_client.unannounce_object(object_uri)
@@ -736,7 +736,7 @@ class NodeWithMastodonAPI(FediverseNode):
         return None
 
 
-    # Python 3.12 @override
+    @override
     def note_content(self, actor_acct_uri: str, note_uri: str) -> str | None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.note_dict(note_uri)
@@ -745,14 +745,14 @@ class NodeWithMastodonAPI(FediverseNode):
         return None
 
 
-    # Python 3.12 @override
+    @override
     def object_author(self, actor_acct_uri: str, object_uri: str) -> str | None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.note_dict(object_uri)
         return cast(str, response['author']['acct'])
 
 
-    # Python 3.12 @override
+    @override
     def direct_replies_to_object(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.object_context(object_uri)
@@ -760,7 +760,7 @@ class NodeWithMastodonAPI(FediverseNode):
         return ret
 
 
-    # Python 3.12 @override
+    @override
     def object_likers(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.object_likers(object_uri)
@@ -768,7 +768,7 @@ class NodeWithMastodonAPI(FediverseNode):
         return ret
 
 
-    # Python 3.12 @override
+    @override
     def object_announcers(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.object_announcers(object_uri)
@@ -778,7 +778,7 @@ class NodeWithMastodonAPI(FediverseNode):
 
 # From ActivityPubNode
 
-    # Python 3.12 @override
+    @override
     def obtain_actor_document_uri(self, rolename: str | None = None) -> str:
         account_manager = cast(AccountManager, self._account_manager)
         account = cast(MastodonAccount, account_manager.obtain_account_by_role(rolename))
@@ -788,7 +788,7 @@ class NodeWithMastodonAPI(FediverseNode):
     # def obtain_followers_collection_uri(self, actor_acct_uri: str) -> str:
     # def obtain_following_collection_uri(self, actor_acct_uri: str) -> str:
 
-    # Python 3.12 @override
+    @override
 
     # Work in progress
 
@@ -824,14 +824,14 @@ class NodeWithMastodonAPI(FediverseNode):
 
 # From WebFingerServer
 
-    # Python 3.12 @override
+    @override
     def obtain_account_identifier(self, rolename: str | None = None) -> str:
         account_manager = cast(AccountManager, self._account_manager)
         account = cast(MastodonAccount, account_manager.obtain_account_by_role(rolename))
         return account.actor_acct_uri
 
 
-    # Python 3.12 @override
+    @override
     def obtain_non_existing_account_identifier(self, rolename: str | None = None ) -> str:
         account_manager = cast(AccountManager, self._account_manager)
         non_account = cast(FediverseNonExistingAccount, account_manager.obtain_non_existing_account_by_role(rolename))
@@ -849,7 +849,7 @@ class NodeWithMastodonAPI(FediverseNode):
 
 # From Node
 
-    # Python 3.12 @override
+    @override
     def provision_account_for_role(self, role: str | None = None) -> Account | None:
         context_msg = f'Mastodon Node { self }: '
         userid = prompt_user_parse_validate(

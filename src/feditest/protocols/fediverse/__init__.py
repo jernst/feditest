@@ -120,6 +120,17 @@ class FediverseNode(WebFingerClient, WebFingerServer, ActivityPubNode):
         """
         raise NotImplementedByNodeError(self, FediverseNode.obtain_actor_acct_uri)
 
+    def obtain_non_existing_actor_acct_uri(self, rolename: str | None = None ) -> str:
+        """
+        Smart factory method to return what could be the acct: URI of an Actor on this Node but
+        isn't because the Actor does not exist. Different rolenames produce different
+        results; the same rolename produces the same result.
+        rolename: refer to this non-existing Actor by this rolename; used to disambiguate multiple
+           non-existing Actors on the same server by how they are used in tests
+        return: the handle
+        """
+        raise NotImplementedByNodeError(self, FediverseNode.obtain_non_existing_actor_acct_uri)
+
 # Operations related to relations between actors
 
     def make_follow(self, actor_acct_uri: str, to_follow_actor_acct_uri: str) -> None:
