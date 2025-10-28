@@ -1,10 +1,12 @@
 """
 """
 
+from feditest import nodedriver
 from feditest.nodedrivers import AccountManager, NodeConfiguration
 from feditest.nodedrivers.fallback.fediverse import AbstractFallbackFediverseNodeDriver, FallbackFediverseNode
 
 
+@nodedriver
 class FediverseSaasNodeDriver(AbstractFallbackFediverseNodeDriver):
     """
     A NodeDriver that supports all protocols but doesn't automate anything and assumes the

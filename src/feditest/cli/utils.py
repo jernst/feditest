@@ -143,7 +143,7 @@ def create_constellation_from_nodes(args: Namespace) -> TestPlanConstellation | 
             roles[rolename] = node
     if roles:
         return TestPlanConstellation(roles)
-    return None;
+    return None
 
 
 def create_constellation_from_default() -> TestPlanConstellation | None:
@@ -174,6 +174,7 @@ def add_nodedriversdir_argument(parser: ArgumentParser) -> None:
     Helper to make help text consistent across commands.
     """
     parser.add_argument('--nodedriversdir',
+                        default=[],
                         action='append',
                         help='Directory or directories where to find extra drivers for nodes that can be tested ' + _help_for_default_dirs(feditest.DEFAULT_NODE_DRIVERS_DIRS))
 

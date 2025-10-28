@@ -23,7 +23,6 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
         parser.print_help()
         return 0
 
-    feditest.load_default_node_drivers()
     feditest.load_node_drivers_from(args.nodedriversdir)
 
     feditest.load_default_tests()

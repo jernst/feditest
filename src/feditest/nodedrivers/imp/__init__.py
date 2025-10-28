@@ -5,6 +5,7 @@ An in-process Node implementation for now.
 import httpx
 from multidict import MultiDict
 
+from feditest import nodedriver
 from feditest.nodedrivers import AccountManager, Node, NodeConfiguration, NodeDriver, HOSTNAME_PAR
 from feditest.protocols.web.diag import (
     HttpRequest,
@@ -61,6 +62,7 @@ class Imp(AbstractWebFingerDiagClient):
         return
 
 
+@nodedriver
 class ImpInProcessNodeDriver(NodeDriver):
     """
     Knows how to instantiate an Imp.

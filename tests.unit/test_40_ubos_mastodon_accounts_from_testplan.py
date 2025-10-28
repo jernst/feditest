@@ -8,6 +8,10 @@ from typing import cast
 import pytest
 
 import feditest
+from feditest.protocols.fediverse import (
+    ROLE_ACCOUNT_FIELD,
+    ROLE_NON_EXISTING_ACCOUNT_FIELD,
+)
 from feditest.nodedrivers.mastodon import (
     MastodonAccount,
     MastodonOAuthTokenAccount,
@@ -15,12 +19,9 @@ from feditest.nodedrivers.mastodon import (
     EMAIL_ACCOUNT_FIELD,
     PASSWORD_ACCOUNT_FIELD,
     OAUTH_TOKEN_ACCOUNT_FIELD,
-    ROLE_ACCOUNT_FIELD,
-    ROLE_NON_EXISTING_ACCOUNT_FIELD,
     USERID_ACCOUNT_FIELD,
     USERID_NON_EXISTING_ACCOUNT_FIELD
 )
-from feditest.nodedrivers.mastodon.ubos import MastodonUbosNodeDriver
 from feditest.protocols.fediverse import FediverseNonExistingAccount
 from feditest.testplan import TestPlan, TestPlanConstellation, TestPlanConstellationNode, TestPlanSessionTemplate
 
@@ -42,8 +43,22 @@ def init():
 
 
 @pytest.fixture(autouse=True)
+def set_global_variable():
+    # before test
+    feditest.DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = True
+
+    # yield control to the test
+    yield
+
+    # after test
+    feditest.DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = False
+
+
+@pytest.fixture(autouse=True)
 def the_test_plan() -> TestPlan:
+    from feditest.nodedrivers.mastodon.ubosgears import MastodonUbosNodeDriver
     node_driver = MastodonUbosNodeDriver()
+
     parameters = None
     plan_accounts = [
         {

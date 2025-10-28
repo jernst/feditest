@@ -4,6 +4,7 @@
 import os
 from typing import cast
 
+from feditest import nodedriver
 from feditest.nodedrivers import (
     Account,
     AccountManager,
@@ -12,21 +13,18 @@ from feditest.nodedrivers import (
     Node,
     NodeConfiguration
 )
-from feditest.nodedrivers.mastodon.ubos import MastodonUbosNodeConfiguration
-from feditest.nodedrivers.ubos import UbosNode, UbosNodeConfiguration, UbosNodeDriver
+from feditest.nodedrivers.mastodon.ubosgears_shared import MastodonUbosNodeConfiguration
+from feditest.nodedrivers.ubosgears import UbosNode, UbosNodeConfiguration, UbosNodeDriver
 from feditest.nodedrivers.wordpress import (
     OAUTH_TOKEN_ACCOUNT_FIELD,
     ROLE_ACCOUNT_FIELD,
-    ROLE_NON_EXISTING_ACCOUNT_FIELD,
     USERID_ACCOUNT_FIELD,
-    USERID_NON_EXISTING_ACCOUNT_FIELD,
     WordPressAccount,
     WordPressPlusPluginsNode
 )
-from feditest.protocols.fediverse import FediverseNonExistingAccount
+from feditest.protocols.fediverse import FediverseNonExistingAccount, ROLE_NON_EXISTING_ACCOUNT_FIELD, USERID_NON_EXISTING_ACCOUNT_FIELD
 from feditest.reporting import trace
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeAccountField, TestPlanNodeNonExistingAccountField
-
 
 
 class WordPressUbosAccountManager(DefaultAccountManager):
@@ -93,6 +91,7 @@ $oauth->get_token_storage()->setAccessToken( "{ token }", "{ oauth_client_id }",
         return token
 
 
+@nodedriver
 class WordPressPlusPluginsUbosNodeDriver(UbosNodeDriver):
     """
     Knows how to instantiate Mastodon via UBOS.

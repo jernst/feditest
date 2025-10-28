@@ -568,7 +568,13 @@ class NodeDriver(ABC):
 
 
     def __str__(self) -> str:
-        return self.__class__.__name__
+        from feditest import all_node_drivers
+
+        ret = self.__class__.__name__
+        for name, value in all_node_drivers.items():
+            if value == self:
+                ret = name
+        return ret
 
 
 class SkipTestException(Exception):

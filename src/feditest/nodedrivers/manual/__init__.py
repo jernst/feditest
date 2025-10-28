@@ -2,12 +2,14 @@
 A NodeDriver that supports all protocols but doesn't automate anything.
 """
 
+from feditest import nodedriver
 from feditest.nodedrivers import AccountManager, Node, NodeConfiguration
 from feditest.nodedrivers.fallback.fediverse import AbstractFallbackFediverseNodeDriver, FallbackFediverseNode
 from feditest.protocols.fediverse import FediverseNode
 from feditest.utils import prompt_user
 
 
+@nodedriver
 class FediverseManualNodeDriver(AbstractFallbackFediverseNodeDriver):
     """
     A NodeDriver that supports all web server-side protocols but doesn't automate anything.

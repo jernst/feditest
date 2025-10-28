@@ -23,7 +23,6 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
 
     pattern = re.compile(args.filter_regex) if args.filter_regex else None
 
-    feditest.load_default_node_drivers()
     feditest.load_node_drivers_from(args.nodedriversdir)
 
     feditest.load_default_tests()
