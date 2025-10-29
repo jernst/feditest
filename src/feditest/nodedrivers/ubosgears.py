@@ -524,7 +524,7 @@ class UbosNodeDriver(NodeDriver):
             return ret
 
         except Exception as e:
-            warning('Something went wrong during instantiation of UbosNode, undeploying', e)
+            warning('Something went wrong during instantiation of UbosNode, undeploying:', e)
             self._cleanup_node(config)
             raise e
 
