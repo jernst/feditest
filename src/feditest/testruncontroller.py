@@ -146,7 +146,7 @@ class InteractiveTestRunController(TestRunController):
         A Test Step as just completed. Which Test Step should we run next?
         """
         if last_test_step_index >= 0:
-            prompt = 'Which Test Step to run next? n(ext test step), r(repeat just completed test test), c(ancel current test), a(bort current session), q(uit): '
+            prompt = 'Which Test Step to run next? n(ext test step), r(repeat just completed test step), c(ancel current test), a(bort current session), q(uit): '
         else:
             prompt = 'Which Test Step to run first? n(ext/first test step), (test step number), c(ancel current test), a(bort current session), q(uit): '
         while True:
