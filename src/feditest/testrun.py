@@ -130,7 +130,7 @@ class TestRunConstellation:
 
         registry = registry_singleton()
         root_cert = registry.root_cert_for_trust_root()
-        for plan_role_name in self._plan_constellation.roles:
+        for plan_role_name in reversed(self._plan_constellation.roles):
             if plan_role_name in self._nodes: # setup may never have succeeded
                 trace('Tearing down role', plan_role_name)
                 node = self._nodes[plan_role_name]
