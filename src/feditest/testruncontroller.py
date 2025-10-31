@@ -3,6 +3,7 @@ Classes that know how to control a TestRun.
 """
 
 from abc import ABC, abstractmethod
+from typing import override
 
 import feditest.testrun
 from feditest.reporting import is_trace_active
@@ -42,7 +43,7 @@ class TestRunController(ABC):
 
 
     @abstractmethod
-    def determine_next_constellation_index(self, last_constellation_index: int = -1) -> int:
+    def determine_next_constellation_index(self, last_constellation_success: bool, last_constellation_index: int = -1) -> int:
         """
         last_constellation_index: -1 means: we haven't started yet
         """
@@ -50,7 +51,7 @@ class TestRunController(ABC):
 
 
     @abstractmethod
-    def determine_next_test_index(self, last_test_index: int = -1) -> int:
+    def determine_next_test_index(self, last_test_success: bool, last_test_index: int = -1) -> int:
         """
         last_test_index: -1 means: we haven't started yet
         """
@@ -58,7 +59,7 @@ class TestRunController(ABC):
 
 
     @abstractmethod
-    def determine_next_test_step_index(self, last_test_step_index: int = -1) -> int:
+    def determine_next_test_step_index(self, last_test_step_success: bool, last_test_step_index: int = -1) -> int:
         """
         last_test_step_index: -1 means: we haven't started yet
         """
@@ -66,20 +67,24 @@ class TestRunController(ABC):
 
 
 class AutomaticTestRunController(TestRunController):
-    def determine_next_constellation_index(self, last_constellation_index: int = -1) -> int:
+    @override
+    def determine_next_constellation_index(self, last_constellation_success: bool, last_constellation_index: int = -1) -> int:
         return last_constellation_index+1
 
 
-    def determine_next_test_index(self, last_test_index: int = -1) -> int:
+    @override
+    def determine_next_test_index(self, last_test_success: bool, last_test_index: int = -1) -> int:
         return last_test_index+1
 
 
-    def determine_next_test_step_index(self, last_test_step_index: int = -1) -> int:
+    @override
+    def determine_next_test_step_index(self, last_test_step_success: bool, last_test_step_index: int = -1) -> int:
         return last_test_step_index+1
 
 
 class InteractiveTestRunController(TestRunController):
-    def determine_next_constellation_index(self, last_constellation_index: int = -1) -> int:
+    @override
+    def determine_next_constellation_index(self, last_constellation_success: bool, last_constellation_index: int = -1) -> int:
         """
         A TestRunSession with a certain TestRunConstellation has just completed. Which TestRunConstellation should
         we run it with next?
@@ -106,7 +111,8 @@ class InteractiveTestRunController(TestRunController):
             print('Command not recognized, try again.')
 
 
-    def determine_next_test_index(self, last_test_index: int = -1) -> int:
+    @override
+    def determine_next_test_index(self, last_test_success: bool, last_test_index: int = -1) -> int:
         """
         A Test has just completed. Which Test should we run next?
         """
@@ -134,7 +140,8 @@ class InteractiveTestRunController(TestRunController):
             print('Command not recognized, try again.')
 
 
-    def determine_next_test_step_index(self, last_test_step_index: int = -1) -> int:
+    @override
+    def determine_next_test_step_index(self, last_test_step_success: bool, last_test_step_index: int = -1) -> int:
         """
         A Test Step as just completed. Which Test Step should we run next?
         """
@@ -175,3 +182,37 @@ class InteractiveTestRunController(TestRunController):
             print()
 
         return ret
+
+
+
+class InteractiveOnErrorTestRunController(TestRunController):
+    def __init__(self, run: 'feditest.testrun.TestRun' ):
+        super().__init__(run)
+
+        self.delegate = AutomaticTestRunController(run)
+
+
+    def turn_interactive(self) -> None:
+        self.delegate = InteractiveTestRunController(self.run)
+
+
+    @override
+    def determine_next_constellation_index(self, last_constellation_success: bool, last_constellation_index: int = -1) -> int:
+        if not last_constellation_success:
+            self.turn_interactive()
+        return self.delegate.determine_next_constellation_index(last_constellation_success, last_constellation_index)
+
+
+    @override
+    def determine_next_test_index(self, last_test_success: bool, last_test_index: int = -1) -> int:
+        if not last_test_success:
+            self.turn_interactive()
+        return self.delegate.determine_next_test_index(last_test_success, last_test_index)
+
+
+    @override
+    def determine_next_test_step_index(self, last_test_step_success: bool, last_test_step_index: int = -1) -> int:
+        if not last_test_step_success:
+            self.turn_interactive()
+        return self.delegate.determine_next_test_step_index(last_test_step_success, last_test_step_index)
+
