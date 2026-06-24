@@ -2,7 +2,7 @@
 Functionality that may be shared by several WebFinger Node implementations.
 """
 
-from typing import cast
+from typing import cast, override
 
 from feditest.protocols.web.diag import HttpRequest, HttpRequestResponsePair, WebDiagClient
 from feditest.protocols.webfinger import WebFingerServer
@@ -12,7 +12,7 @@ from feditest.utils import ParsedUri
 
 
 class AbstractWebFingerDiagClient(WebFingerDiagClient):
-    # Python 3.12 @override
+    @override
     def diag_perform_webfinger_query(
         self,
         resource_uri: str,

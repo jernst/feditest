@@ -17,7 +17,7 @@ def init_node_drivers():
     Cleanly define the NodeDrivers.
     """
     feditest.all_node_drivers = {}
-    feditest.load_default_node_drivers()
+    feditest.dont_load_default_node_drivers()
 
 
 @pytest.fixture(scope="module", autouse=True)

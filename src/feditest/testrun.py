@@ -130,7 +130,7 @@ class TestRunConstellation:
 
         registry = registry_singleton()
         root_cert = registry.root_cert_for_trust_root()
-        for plan_role_name in self._plan_constellation.roles:
+        for plan_role_name in reversed(self._plan_constellation.roles):
             if plan_role_name in self._nodes: # setup may never have succeeded
                 trace('Tearing down role', plan_role_name)
                 node = self._nodes[plan_role_name]
@@ -280,7 +280,7 @@ class TestRunClass(TestRunTest):
         try:
             test_instance = self.test_from_test_class.clazz(**args)
 
-            plan_step_index = controller.determine_next_test_step_index()
+            plan_step_index = controller.determine_next_test_step_index(True)
             while plan_step_index>=0 and plan_step_index<len(self.test_from_test_class.steps):
                 plan_step = self.test_from_test_class.steps[plan_step_index]
                 run_step = TestRunStepInClass(self, plan_step, plan_step_index)
@@ -288,10 +288,7 @@ class TestRunClass(TestRunTest):
 
                 run_step.run(test_instance, controller)
 
-                if run_step.exception:
-                    break
-
-                plan_step_index = controller.determine_next_test_step_index(plan_step_index)
+                plan_step_index = controller.determine_next_test_step_index(run_step.exception is None, plan_step_index)
 
         except feditest.testruncontroller.AbortTestException as e: # User input
             self.exception = e
@@ -339,11 +336,12 @@ class TestRunSession(HasStartEndResults):
         self.started = datetime.now(UTC)
 
         try:
-            plan_test_index = controller.determine_next_test_index()
+            plan_test_index = controller.determine_next_test_index(True)
             while plan_test_index>=0 and plan_test_index<len(self.plan_session.tests):
                 try:
                     test_spec = self.plan_session.tests[plan_test_index]
 
+                    run_test : TestRunTest | None = None
                     if test_spec.skip:
                         info('Skipping Test:', test_spec.skip)
                     else:
@@ -353,7 +351,6 @@ class TestRunSession(HasStartEndResults):
                             self.run_constellation.setup()
 
                         test = test_spec.get_test()
-                        run_test : TestRunTest | None = None
                         if isinstance(test, feditest.TestFromTestFunction):
                             run_test = TestRunFunction(self, self.run_constellation, test, plan_test_index)
                         elif isinstance(test, feditest.TestFromTestClass):
@@ -366,7 +363,7 @@ class TestRunSession(HasStartEndResults):
 
                         run_test.run(controller)
 
-                    plan_test_index = controller.determine_next_test_index(plan_test_index)
+                    plan_test_index = controller.determine_next_test_index(run_test is None or run_test.exception is None, plan_test_index)
 
                 except feditest.testruncontroller.AbortTestException as e:
                     self.exception = e
@@ -432,14 +429,14 @@ class TestRun(HasStartEndResults):
         info(f'Started TestRun { self }')
 
         try:
-            plan_constellation_index = controller.determine_next_constellation_index()
+            plan_constellation_index = controller.determine_next_constellation_index(True)
             while plan_constellation_index >=0 and plan_constellation_index<len(self.plan.constellations):
                 run_session = TestRunSession(self, plan_constellation_index)
                 self.run_sessions.append(run_session) # always append, even if we run the session plan session again
 
                 run_session.run(controller)
 
-                plan_constellation_index = controller.determine_next_constellation_index(plan_constellation_index)
+                plan_constellation_index = controller.determine_next_constellation_index(run_session.exception is None, plan_constellation_index)
 
             return
 

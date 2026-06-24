@@ -10,7 +10,7 @@ import re
 import sys
 import importlib.metadata
 from types import ModuleType
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import Any, Callable, List, Optional, TypeVar, override
 from urllib.parse import ParseResult, parse_qs, urlparse
 from langcodes import Language
 
@@ -81,8 +81,8 @@ class ParsedNonAcctUri(ParsedUri):
         self._query_params : dict[str,list[str]] | None = None
 
 
-    # Python 3.12 @override
     @property
+    @override
     def scheme(self) -> str:
         return self._scheme
 
@@ -112,8 +112,8 @@ class ParsedNonAcctUri(ParsedUri):
         return self._query
 
 
-    # Python 3.12 @override
     @property
+    @override
     def uri(self) -> str:
         ret = f'{ self._scheme }:'
         if self._netloc:
@@ -155,7 +155,7 @@ class ParsedNonAcctUri(ParsedUri):
         return None
 
 
-    # Python 3.12 @override
+    @override
     def __repr__(self):
         return f'ParsedNonAcctUri({ self.uri })'
 
@@ -178,8 +178,8 @@ class ParsedAcctUri(ParsedUri):
         self._host = host
 
 
-    # Python 3.12 @override
     @property
+    @override
     def scheme(self) -> str:
         return 'acct'
 
@@ -194,13 +194,13 @@ class ParsedAcctUri(ParsedUri):
         return self._host
 
 
-    # Python 3.12 @override
     @property
+    @override
     def uri(self) -> str:
         return f'acct:{ self.user }@{ self.host }'
 
 
-    # Python 3.12 @override
+    @override
     def __repr__(self):
         return f'ParsedAcctUri({ self.uri })'
 

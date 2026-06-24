@@ -32,7 +32,7 @@ def init_node_drivers():
     """
     Cleanly define the NodeDrivers.
     """
-    feditest.load_default_node_drivers()
+    feditest.dont_load_default_node_drivers()
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -74,13 +74,13 @@ def test_plan_fixture() -> TestPlan:
         TestPlanConstellation(
             {
                 'sender_node': TestPlanConstellationNode(
-                    'FediverseSaasNodeDriver',
+                    'fediverse.FediverseSaasNodeDriver',
                     {
                         'app' : APP_NAMES[0],
                         'hostname' : 'senderA'
                     }),
                 'receiver_node': TestPlanConstellationNode(
-                    'FediverseSaasNodeDriver',
+                    'fediverse.FediverseSaasNodeDriver',
                     {
                         'app' : APP_NAMES[1],
                         'hostname' : 'senderB'
@@ -90,13 +90,13 @@ def test_plan_fixture() -> TestPlan:
         TestPlanConstellation(
             {
                 'sender_node': TestPlanConstellationNode(
-                    'FediverseSaasNodeDriver',
+                    'fediverse.FediverseSaasNodeDriver',
                     {
                         'app' : APP_NAMES[2],
                         'hostname' : 'senderA'
                     }),
                 'receiver_node': TestPlanConstellationNode(
-                    'FediverseSaasNodeDriver',
+                    'fediverse.FediverseSaasNodeDriver',
                     {
                         'app' : APP_NAMES[3],
                         'hostname' : 'senderB'

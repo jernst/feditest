@@ -2,6 +2,8 @@
 # Dummy classes for testing
 #
 
+from typing import override
+
 from feditest.nodedrivers import AccountManager, Node, NodeConfiguration, NodeDriver
 
 
@@ -10,7 +12,7 @@ class DummyNode(Node):
 
 
 class DummyNodeDriver(NodeDriver):
-    # Python 3.12 @Override
+    @override
     def _provision_node(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None) -> Node:
         return DummyNode(rolename, config, account_manager)
 

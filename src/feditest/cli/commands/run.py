@@ -19,7 +19,8 @@ from feditest.registry import Registry, set_registry_singleton
 from feditest.reporting import fatal, warning
 from feditest.testplan import TestPlan
 from feditest.testrun import TestRun
-from feditest.testruncontroller import AutomaticTestRunController, InteractiveTestRunController, TestRunController
+from feditest.testruncontroller import AutomaticTestRunController, InteractiveTestRunController, InteractiveOnErrorTestRunController, TestRunController
+from feditest.testruntranscript import TestRunTranscript
 from feditest.testruntranscriptserializer.json import JsonTestRunTranscriptSerializer
 from feditest.testruntranscriptserializer.html import HtmlRunTranscriptSerializer
 from feditest.testruntranscriptserializer.summary import SummaryTestRunTranscriptSerializer
@@ -35,7 +36,6 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
         parser.print_help()
         return 0
 
-    feditest.load_default_node_drivers()
     feditest.load_node_drivers_from(args.nodedriversdir)
 
     feditest.load_default_tests()
@@ -65,11 +65,14 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
     if args.interactive :
         warning('--interactive: implementation is incomplete')
         controller : TestRunController = InteractiveTestRunController(test_run)
+    elif args.interactive_on_error :
+        warning('--interactive_on_error: implementation is incomplete')
+        controller : TestRunController = InteractiveOnErrorTestRunController(test_run)
     else:
         controller = AutomaticTestRunController(test_run)
     test_run.run(controller)
 
-    transcript : feditest.testruntranscript.TestRunTranscript = test_run.transcribe()
+    transcript : TestRunTranscript = test_run.transcribe()
 
     if isinstance(args.tap, str) or args.tap:
         TapTestRunTranscriptSerializer().write(transcript, cast(str|None, args.tap))
@@ -104,8 +107,11 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     add_nodedriversdir_argument(parser)
     add_testsdir_argument(parser)
     parser.add_argument('--domain', type=hostname_validate, help='Local-only DNS domain for the DNS hostnames that are auto-generated for nodes')
-    parser.add_argument('-i', '--interactive', action="store_true", help="Run the tests interactively")
     parser.add_argument('--who', action='store_true', help="Record who ran the test plan on what host.")
+
+    interactive_group = parser.add_mutually_exclusive_group()
+    interactive_group.add_argument('-i', '--interactive', action="store_true", help="Run the tests interactively")
+    interactive_group.add_argument('-ie', '--interactive-on-error', action="store_true", help="Run the tests non-interactively until an error occurs, then become interactive")
 
     # test plan options. We do not use argparse groups, as the situation is more complicated than argparse seems to support
     parser.add_argument('--name', default=None, required=False, help='Name of the generated test plan')

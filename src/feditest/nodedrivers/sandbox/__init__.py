@@ -1,8 +1,9 @@
 """
 """
 
-from typing import List
+from typing import List, override
 
+from feditest import nodedriver
 from feditest.nodedrivers import AccountManager, NodeConfiguration, NodeDriver, HOSTNAME_PAR
 from feditest.protocols.sandbox import SandboxLogEvent, SandboxMultClient, SandboxMultServer
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeParameter
@@ -18,18 +19,19 @@ class SandboxMultClient_ImplementationA(SandboxMultClient):
         return c
 
 
+@nodedriver
 class SandboxMultClientDriver_ImplementationA(NodeDriver):
     """
     Driver for the client implementation, so the client can be provisioned and unprovisioned for
     test sessions.
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_parameters() -> list[TestPlanNodeParameter]:
         return [ HOSTNAME_PAR ]
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         return (
             NodeConfiguration(
@@ -42,7 +44,7 @@ class SandboxMultClientDriver_ImplementationA(NodeDriver):
         )
 
 
-    # Python 3.12 @override
+    @override
     def _provision_node(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None) ->  SandboxMultClient_ImplementationA:
         return SandboxMultClient_ImplementationA(rolename, config, account_manager)
 
@@ -65,28 +67,29 @@ class SandboxMultServer_Implementation1(SandboxMultServer):
         return c
 
 
-    def start_logging(self):
+    def start_logging(self) -> None:
         self._log = []
 
 
-    def get_and_clear_log(self):
+    def get_and_clear_log(self) -> List[SandboxLogEvent] | None:
         ret = self._log
         self._log = None
         return ret
 
 
+@nodedriver
 class SandboxMultServerDriver_Implementation1(NodeDriver):
     """
     Driver for the first server implementation, so this server implementation can be provisioned and unprovisioned for
     test sessions.
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_parameters() -> list[TestPlanNodeParameter]:
         return [ HOSTNAME_PAR ]
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         return (
             NodeConfiguration(
@@ -99,7 +102,7 @@ class SandboxMultServerDriver_Implementation1(NodeDriver):
         )
 
 
-    # Python 3.12 @override
+    @override
     def _provision_node(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None) ->  SandboxMultServer_Implementation1:
         return SandboxMultServer_Implementation1(rolename, config)
 
@@ -135,18 +138,19 @@ class SandboxMultServer_Implementation2Faulty(SandboxMultServer):
         return ret
 
 
+@nodedriver
 class SandboxMultServerDriver_Implementation2Faulty(NodeDriver):
     """
     Driver for the second server implementation, so this server implementation can be provisioned and unprovisioned for
     test sessions.
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_parameters() -> list[TestPlanNodeParameter]:
         return [ HOSTNAME_PAR ]
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         return (
             NodeConfiguration(
@@ -159,6 +163,6 @@ class SandboxMultServerDriver_Implementation2Faulty(NodeDriver):
         )
 
 
-    # Python 3.12 @override
+    @override
     def _provision_node(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None) ->  SandboxMultServer_Implementation2Faulty:
         return SandboxMultServer_Implementation2Faulty(rolename, config)

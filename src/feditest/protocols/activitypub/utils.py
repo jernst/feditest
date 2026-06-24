@@ -23,9 +23,9 @@ class MemberOfCollectionMatcher(BaseMatcher[Any]):
         self._node = node
 
 
-    def _matches(self, member_candidate_uri: str) -> bool:
+    def _matches(self, item: str) -> bool:
         ret = prompt_user_parse_validate(
-                f'Is "{ member_candidate_uri }" a member of the collection at URI "{ self._collection_uri }"? ',
+                f'Is "{ item }" a member of the collection at URI "{ self._collection_uri }"? ',
                 parse_validate=boolean_response_parse_validate)
         return ret
 

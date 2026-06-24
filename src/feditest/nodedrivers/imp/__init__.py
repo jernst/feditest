@@ -4,7 +4,9 @@ An in-process Node implementation for now.
 
 import httpx
 from multidict import MultiDict
+from typing import override
 
+from feditest import nodedriver
 from feditest.nodedrivers import AccountManager, Node, NodeConfiguration, NodeDriver, HOSTNAME_PAR
 from feditest.protocols.web.diag import (
     HttpRequest,
@@ -26,7 +28,7 @@ class Imp(AbstractWebFingerDiagClient):
     """
     In-process diagnostic WebFinger client.
     """
-    # Python 3.12 @override
+    @override
     def http(self, request: HttpRequest, follow_redirects: bool = True, verify=False) -> HttpRequestResponsePair:
         trace( f'Performing HTTP { request.method } on { request.parsed_uri.uri }')
 
@@ -48,7 +50,7 @@ class Imp(AbstractWebFingerDiagClient):
         raise WebDiagClient.HttpUnsuccessfulError(request)
 
 
-    # Python 3.12 @override
+    @override
     def add_cert_to_trust_store(self, root_cert: str) -> None:
         """
         On the Imp, we don't do this (for now?)
@@ -56,22 +58,23 @@ class Imp(AbstractWebFingerDiagClient):
         return
 
 
-    # Python 3.12 @override
+    @override
     def remove_cert_from_trust_store(self, root_cert: str) -> None:
         return
 
 
+@nodedriver
 class ImpInProcessNodeDriver(NodeDriver):
     """
     Knows how to instantiate an Imp.
     """
-    # Python 3.12 @override
+    @override
     @staticmethod
     def test_plan_node_parameters() -> list[TestPlanNodeParameter]:
         return []
 
 
-    # Python 3.12 @override
+    @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
         return (
             NodeConfiguration(
@@ -84,11 +87,11 @@ class ImpInProcessNodeDriver(NodeDriver):
         )
 
 
-    # Python 3.12 @override
+    @override
     def _provision_node(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None) -> Imp:
         return Imp(rolename, config, account_manager)
 
 
-    # Python 3.12 @override
+    @override
     def _unprovision_node(self, node: Node) -> None:
         pass

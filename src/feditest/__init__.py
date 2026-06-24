@@ -3,6 +3,7 @@ Core module.
 """
 
 import importlib
+import importlib.util
 from collections.abc import Callable
 from enum import Enum
 from inspect import getmembers, getmodule, isfunction
@@ -77,7 +78,7 @@ def _load_tests_pass2() -> None:
     global _registered_as_test_step
 
     for name, value in _registered_as_test.items():
-        test : Test | None
+        test : Test | None = None
         if isinstance(value, FunctionType):
             test = TestFromTestFunction(
                     name,
@@ -182,12 +183,21 @@ def step(to_register: Callable[..., None]) -> Callable[..., None]:
 
 _loading_node_drivers = False
 
-def load_node_drivers_from(dirs: list[str]) -> None:
+def load_node_drivers_from(dirs: list[str] | None) -> None:
     """
     Load all node drivers found in the provided directories
     """
-    if not dirs:
+    if dirs is None:
+        # Invoked from dont_load_default_node_drivers
+        dirs = []
+    else:
         dirs = DEFAULT_NODE_DRIVERS_DIRS
+
+    nodedrivers_spec = importlib.util.find_spec('feditest.nodedrivers')
+    if not nodedrivers_spec:
+        fatal('Cannot find feditest.nodedrivers')
+        return None
+    dirs.extend(nodedrivers_spec.submodule_search_locations or [])
 
     global _loading_node_drivers
 
@@ -201,6 +211,8 @@ all_node_drivers : dict[str,Type[Any]]= {}
 
 TNodeDriver = TypeVar('TNodeDriver')
 
+DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = False
+
 def nodedriver(to_register: Type[TNodeDriver]) -> Type[TNodeDriver]:
     """
     Used as decorator of NodeDriver classes, like this:
@@ -208,6 +220,10 @@ def nodedriver(to_register: Type[TNodeDriver]) -> Type[TNodeDriver]:
     @nodedriver
     class XYZDriver : ...
     """
+    global DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING
+    if DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING:
+        return to_register
+
     global _loading_node_drivers
     global all_node_drivers
 
@@ -227,22 +243,9 @@ def nodedriver(to_register: Type[TNodeDriver]) -> Type[TNodeDriver]:
 
     return to_register
 
-def load_default_node_drivers() -> None:
-    for d in [ 'feditest.nodedrivers.imp.ImpInProcessNodeDriver',
-               'feditest.nodedrivers.manual.FediverseManualNodeDriver',
-               'feditest.nodedrivers.mastodon.MastodonSaasNodeDriver',
-               'feditest.nodedrivers.mastodon.ubos.MastodonUbosNodeDriver',
-               'feditest.nodedrivers.saas.FediverseSaasNodeDriver',
-               'feditest.nodedrivers.sandbox.SandboxMultClientDriver_ImplementationA',
-               'feditest.nodedrivers.sandbox.SandboxMultServerDriver_Implementation1',
-               'feditest.nodedrivers.sandbox.SandboxMultServerDriver_Implementation2Faulty',
-               'feditest.nodedrivers.ubos.GenericUbosNodeDriver',
-               'feditest.nodedrivers.wordpress.WordPressPlusPluginsSaasNodeDriver',
-               'feditest.nodedrivers.wordpress.ubos.WordPressPlusPluginsUbosNodeDriver']:
 
-        module_name, class_name = d.rsplit('.', 1)
-        if class_name not in all_node_drivers:
-            all_node_drivers[class_name] = getattr(importlib.import_module(module_name), class_name)
+def dont_load_default_node_drivers() -> None:
+    load_node_drivers_from(None)
 
 
 class SpecLevel(Enum):
@@ -315,7 +318,7 @@ def _assert_bool(
 
 
 def assert_that(
-    actual_or_assertion: T,
+    actual_or_assertion: object,
     matcher=None,
     reason="",
     spec_level: SpecLevel | None = None,

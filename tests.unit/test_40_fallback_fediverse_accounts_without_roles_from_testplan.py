@@ -8,7 +8,6 @@ from typing import cast
 import pytest
 
 import feditest
-from feditest.nodedrivers.saas import FediverseSaasNodeDriver
 from feditest.protocols.fediverse import (
     USERID_ACCOUNT_FIELD,
     USERID_NON_EXISTING_ACCOUNT_FIELD,
@@ -20,6 +19,18 @@ from feditest.testplan import TestPlan, TestPlanConstellation, TestPlanConstella
 
 HOSTNAME = 'localhost'
 NODE1_ROLE = 'node1-role'
+
+
+@pytest.fixture(autouse=True)
+def set_global_variable():
+    # before test
+    feditest.DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = True
+
+    # yield control to the test
+    yield
+
+    # after test
+    feditest.DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = False
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -36,7 +47,10 @@ def init():
 
 @pytest.fixture(autouse=True)
 def test_plan_fixture() -> TestPlan:
+    feditest.DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = True
+    from feditest.nodedrivers.fediverse import FediverseSaasNodeDriver
     node_driver = FediverseSaasNodeDriver()
+
     parameters = {
         'hostname' : 'example.com', # Avoid interactive question
         'app' : 'test-dummy' # Avoid interactive question

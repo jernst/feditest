@@ -21,7 +21,7 @@ def init_node_drivers():
     Cleanly define the NodeDrivers.
     """
     feditest.all_node_drivers = {}
-    feditest.load_default_node_drivers()
+    feditest.dont_load_default_node_drivers()
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -154,8 +154,8 @@ def test_plan_fixture() -> TestPlan:
     The test plan tests all known tests.
     """
     roles = {
-        'client' : TestPlanConstellationNode('SandboxMultClientDriver_ImplementationA'),
-        'server' : TestPlanConstellationNode('SandboxMultServerDriver_Implementation1'),
+        'client' : TestPlanConstellationNode('sandbox.SandboxMultClientDriver_ImplementationA'),
+        'server' : TestPlanConstellationNode('sandbox.SandboxMultServerDriver_Implementation1'),
     }
     constellation = TestPlanConstellation(roles, 'clientA vs server1')
     tests = [ TestPlanTestSpec(name) for name in sorted(feditest.all_tests.keys()) if feditest.all_tests.get(name) is not None ]

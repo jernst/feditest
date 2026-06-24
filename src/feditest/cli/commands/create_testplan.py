@@ -6,6 +6,7 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 import feditest
 from feditest.cli.utils import (
     add_filter_regex_argument,
+    add_nodedriversdir_argument,
     add_test_argument,
     add_testsdir_argument,
     create_plan_from_session_and_constellations
@@ -20,6 +21,8 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
     if len(remaining):
         parser.print_help()
         return 0
+
+    feditest.load_node_drivers_from(args.nodedriversdir)
 
     feditest.load_default_tests()
     feditest.load_tests_from(args.testsdir)
@@ -45,6 +48,7 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     # general flags and options
     parser = parent_parser.add_parser(cmd_name, help='Create a test plan by running all provided test sessions in all provided constellations')
     add_testsdir_argument(parser)
+    add_nodedriversdir_argument(parser)
 
     # test plan options
     parser.add_argument('--name', default=None, required=False, help='Name of the generated test plan')

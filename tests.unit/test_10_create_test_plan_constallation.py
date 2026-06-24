@@ -6,6 +6,7 @@ import pytest
 
 from feditest.testplan import TestPlanConstellation, TestPlanConstellationNode
 
+
 @pytest.fixture(scope="session")
 def node1() -> TestPlanConstellationNode:
     return TestPlanConstellationNode( 'node1-driver', { 'foo' : 'Foo', 'bar' : 'Bar'})
@@ -23,7 +24,7 @@ def test_unnamed(
     """
     TestPlanConstellations don't have automatic names.
     """
-    roles = {
+    roles : dict[str, TestPlanConstellationNode | None ] = {
         'role1' : node1,
         'role2'  : node2
     }

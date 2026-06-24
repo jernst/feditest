@@ -17,6 +17,10 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
         return 0
 
     constellation = create_constellation_from_nodes(args)
+    if constellation is None:
+        parser.print_help()
+        return 0
+
     if args.name:
         constellation.name = args.name
 

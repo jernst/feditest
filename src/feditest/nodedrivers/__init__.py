@@ -4,7 +4,7 @@ Define interfaces to interact with the nodes in the constellation being tested
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import Any, cast, final
+from typing import Any, cast, final, override
 
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeParameter, TestPlanNodeAccountField, TestPlanNodeNonExistingAccountField
 from feditest.reporting import info
@@ -34,15 +34,15 @@ class Account(ABC):
     """
     def __init__(self, role: str | None):
         self._role = role
-        self._node : 'Node' | None = None
+        self._node : 'Node | None' = None
 
 
     @property
-    def role(self):
+    def role(self) -> str | None:
         return self._role
 
 
-    def set_node(self, node: 'Node'):
+    def set_node(self, node: 'Node') -> None:
         """
         Set the Node at which this is an Account. This is invoked exactly once after the Node
         has been instantiated (the Account is instantiated earlier).
@@ -53,8 +53,11 @@ class Account(ABC):
 
 
     @property
-    def node(self):
-        return self._node
+    def node(self) -> 'Node':
+        if self._node:
+            return self._node
+        else:
+            raise Exception('Invalid initialization')
 
 
 class NonExistingAccount(ABC):
@@ -64,15 +67,15 @@ class NonExistingAccount(ABC):
     """
     def __init__(self, role: str | None):
         self._role = role
-        self._node : 'Node' | None = None
+        self._node : 'Node | None' = None
 
 
     @property
-    def role(self):
+    def role(self) -> str | None:
         return self._role
 
 
-    def set_node(self, node: 'Node'):
+    def set_node(self, node: 'Node') -> None:
         """
         Set the Node at which this is a NonExistingAccount. This is invoked exactly once after the Node
         has been instantiated (the NonExistingAccount is instantiated earlier).
@@ -82,8 +85,11 @@ class NonExistingAccount(ABC):
         self._node = node
 
     @property
-    def node(self):
-        return self._node
+    def node(self) -> 'Node':
+        if self._node:
+            return self._node
+        else:
+            raise Exception('Invalid initialization')
 
 
 class OutOfAccountsException(Exception):
@@ -109,7 +115,7 @@ class AccountManager(ABC):
     TestPlan, or dynamically provisioning accounts etc.
     """
     @abstractmethod
-    def set_node(self, node: 'Node'):
+    def set_node(self, node: 'Node') -> None:
         """
         Set the Node to which this AccountManager belongs. This is invoked exactly once after the Node
         has been instantiated (the AccountManager is instantiated earlier).
@@ -198,7 +204,7 @@ class AbstractAccountManager(AccountManager):
         self._node : Node | None = None # the Node this AccountManager belongs to. Set once the Node has been instantiated
 
 
-    # Python 3.12 @override
+    @override
     def set_node(self, node: 'Node') -> None:
         if self._node:
             raise ValueError('Have Node already')
@@ -214,12 +220,12 @@ class AbstractAccountManager(AccountManager):
             non_existing_account.set_node(self._node)
 
 
-    # Python 3.12 @override
+    @override
     def get_account_by_role(self, role: str | None = None) -> Account | None:
         return self._accounts_allocated_to_role.get(role)
 
 
-    # Python 3.12 @override
+    @override
     def obtain_account_by_role(self, role: str | None = None) -> Account:
         ret = self._accounts_allocated_to_role.get(role)
         if not ret:
@@ -237,12 +243,12 @@ class AbstractAccountManager(AccountManager):
         raise OutOfAccountsException()
 
 
-    # Python 3.12 @override
+    @override
     def get_non_existing_account_by_role(self, role: str | None = None) -> NonExistingAccount | None:
         return self._non_existing_accounts_allocated_to_role.get(role)
 
 
-    # Python 3.12 @override
+    @override
     def obtain_non_existing_account_by_role(self, role: str | None = None) -> NonExistingAccount:
         ret = self._non_existing_accounts_allocated_to_role.get(role)
         if not ret:
@@ -260,7 +266,7 @@ class AbstractAccountManager(AccountManager):
         raise OutOfNonExistingAccountsException()
 
 
-    # Python 3.12 @override
+    @override
     def get_account_by_match(self, match_function: Callable[[Account],bool]) -> Account | None:
         for account in self._accounts_allocated_to_role.values():
             if match_function(account):
@@ -268,7 +274,7 @@ class AbstractAccountManager(AccountManager):
         return None
 
 
-    # Python 3.12 @override
+    @override
     def get_non_existing_account_by_match(self, match_function: Callable[[NonExistingAccount],bool]) -> NonExistingAccount | None:
         for non_existing_account in self._non_existing_accounts_allocated_to_role.values():
             if match_function(non_existing_account):
@@ -568,7 +574,13 @@ class NodeDriver(ABC):
 
 
     def __str__(self) -> str:
-        return self.__class__.__name__
+        from feditest import all_node_drivers
+
+        ret = self.__class__.__name__
+        for name, value in all_node_drivers.items():
+            if value == self:
+                ret = name
+        return ret
 
 
 class SkipTestException(Exception):
