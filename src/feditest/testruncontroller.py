@@ -189,7 +189,7 @@ class InteractiveOnErrorTestRunController(TestRunController):
     def __init__(self, run: 'feditest.testrun.TestRun' ):
         super().__init__(run)
 
-        self.delegate = AutomaticTestRunController(run)
+        self.delegate : TestRunController = AutomaticTestRunController(run)
 
 
     def turn_interactive(self) -> None:

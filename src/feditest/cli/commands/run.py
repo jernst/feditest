@@ -62,12 +62,13 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
     plan.check_can_be_executed()
 
     test_run = TestRun(plan, args.who)
+    controller : TestRunController
     if args.interactive :
         warning('--interactive: implementation is incomplete')
-        controller : TestRunController = InteractiveTestRunController(test_run)
+        controller = InteractiveTestRunController(test_run)
     elif args.interactive_on_error :
         warning('--interactive_on_error: implementation is incomplete')
-        controller : TestRunController = InteractiveOnErrorTestRunController(test_run)
+        controller = InteractiveOnErrorTestRunController(test_run)
     else:
         controller = AutomaticTestRunController(test_run)
     test_run.run(controller)
