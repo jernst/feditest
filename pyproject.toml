@@ -34,7 +34,7 @@ dependencies = [
 description = "Framework to test distributed, heterogeneous systems with complex protocols such as the Fediverse"
 readme = "README-PyPI.md"
 
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 # Do not specify an upper boundary, see https://github.com/fediverse-devnet/feditest/issues/412
 
 classifiers = [
