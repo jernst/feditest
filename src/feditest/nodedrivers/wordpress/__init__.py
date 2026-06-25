@@ -76,8 +76,8 @@ class WordPressAccount(AccountOnNodeWithMastodonAPI):
         return self._mastodon_client
 
 
-    @override
     @property
+    @override
     def internal_userid(self) -> int:
         if self._internal_userid >= 0:
             return self._internal_userid

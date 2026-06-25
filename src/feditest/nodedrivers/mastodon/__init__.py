@@ -532,8 +532,8 @@ class MastodonUserPasswordAccount(MastodonAccount):
         self._mastodon_client: AuthenticatedMastodonApiClient | None = None # Allocated as needed
 
 
-    @override
     @property
+    @override
     def mastodon_client(self) -> AuthenticatedMastodonApiClient:
         if self._mastodon_client is None:
             node = cast(NodeWithMastodonAPI, self._node)
@@ -565,8 +565,8 @@ class MastodonOAuthTokenAccount(MastodonAccount):
         self._mastodon_client: AuthenticatedMastodonApiClient | None = None # Allocated as needed
 
 
-    @override
     @property
+    @override
     def mastodon_client(self) -> AuthenticatedMastodonApiClient:
         if self._mastodon_client is None:
             node = cast(NodeWithMastodonAPI, self._node)
