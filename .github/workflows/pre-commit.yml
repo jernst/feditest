@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11.9'
+          python-version: '3.14.5'
 
       - name: Cache pre-commit environments
         id: cache-pre-commit
