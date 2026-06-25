@@ -18,7 +18,6 @@ from feditest.nodedrivers import (
     APP_VERSION_PAR,
     HOSTNAME_PAR,
     AccountManager,
-    DefaultAccountManager,
     Node,
     NodeConfiguration,
     NodeDriver
@@ -665,27 +664,3 @@ class UbosNodeDriver(NodeDriver):
         cmd = f'sudo bash -c "[[ ! -e { filename } ]] || rm { filename } && update-ca-trust extract"'
         if self._exec_shell(cmd, rshcmd, root_cert).returncode:
             error(f'Failed to execute cmd {cmd}')
-
-
-class GenericUbosNodeDriver(UbosNodeDriver):
-    @override
-    def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> UbosNode:
-        return  UbosNode(rolename, config, account_manager)
-
-
-    @override
-    def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
-        # appid = test_plan_node.parameter_or_raise(APPID_PAR)
-        appid = test_plan_node.parameter_or_raise(APP_PAR)
-        context = test_plan_node.parameter(CONTEXT_PAR) or ''
-
-        return (
-            UbosNodeConfiguration.create_from_node_in_testplan(
-                    test_plan_node,
-                    self,
-                    {
-                        "appid" : appid,
-                        "context" : context
-                    } ),
-            DefaultAccountManager()
-        )
