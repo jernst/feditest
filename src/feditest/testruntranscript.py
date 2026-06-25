@@ -1,9 +1,12 @@
+"""
+"""
+
 import json
 import os
 import os.path
 import traceback
 from datetime import datetime
-from typing import IO, Optional
+from typing import IO
 
 import msgspec
 
@@ -32,11 +35,11 @@ class TestRunConstellationTranscript(msgspec.Struct):
     """
     nodes: dict[str,TestRunNodeTranscript]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ', '.join( [ f'{ role }: { node.node_driver }' for role, node in self.nodes.items() ] )
 
 
-_result_transcript_tracker : list['TestRunResultTranscript'] = []
+_result_transcript_tracker : list[TestRunResultTranscript] = []
 """
 Helps with assigning unique instance identifiers without adding it to the instance itself.
 """
@@ -55,7 +58,7 @@ class TestRunResultTranscript(msgspec.Struct):
 
 
     @staticmethod
-    def create_if_present(exc: Exception | None):
+    def create_if_present(exc: Exception | None) -> TestRunResultTranscript | None:
         if exc is None:
             return None
 
@@ -85,7 +88,7 @@ class TestRunResultTranscript(msgspec.Struct):
         return TestRunResultTranscript(str(exc.__class__.__name__), spec_level, interop_level, stacktrace, msg)
 
 
-    def title(self):
+    def title(self) -> str:
         """
         Construct a single-line title for this result.
         """
@@ -96,7 +99,7 @@ class TestRunResultTranscript(msgspec.Struct):
         return ret
 
 
-    def short_title(self):
+    def short_title(self) -> str:
         """
         Construct a short single-line title for this result.
         """
@@ -106,11 +109,11 @@ class TestRunResultTranscript(msgspec.Struct):
         return 'Unnamed failure.'
 
 
-    def stacktrace_as_text(self):
+    def stacktrace_as_text(self) -> str:
         return '\n'.join( [ f'{frame[0]}:{frame[1]}' for frame in self.stacktrace ])
 
 
-    def id(self):
+    def id(self) -> int:
         """
         Construct a stable id for this result. This is used, for example, for HTML cross-referencing.
         """
@@ -123,14 +126,14 @@ class TestRunResultTranscript(msgspec.Struct):
         return ret
 
 
-    def css_classes(self):
+    def css_classes(self) -> str:
         """
         return a space-separated list of CSS classes to mark up the result with in HTML
         """
         return f'failed { self.spec_level } { self.interop_level }'.lower()
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         ret = self.type
         if self.msg:
             ret += f': { self.msg.strip() }'
@@ -172,7 +175,7 @@ class TestRunTranscriptSummary:
         self.errors_outside_tests : list[TestRunResultTranscript] = []
 
 
-    def count_failures_for(self, spec_level: feditest.SpecLevel | None, interop_level: feditest.InteropLevel | None):
+    def count_failures_for(self, spec_level: feditest.SpecLevel | None, interop_level: feditest.InteropLevel | None) -> int:
         current = self.failures
         if spec_level is not None:
             current = [ f for f in current if f.spec_level == spec_level.name ]
@@ -182,31 +185,31 @@ class TestRunTranscriptSummary:
 
 
     @property
-    def n_total(self):
+    def n_total(self) -> int:
         return len(self.tests)
 
 
     @property
-    def n_failed(self):
+    def n_failed(self) -> int:
         return len(self.failures)
 
 
     @property
-    def n_skipped(self):
+    def n_skipped(self) -> int:
         return len(self.skips)
 
 
     @property
-    def n_errored(self):
+    def n_errored(self) -> int:
         return len(self.errors) + len(self.errors_outside_tests)
 
 
     @property
-    def n_passed(self):
+    def n_passed(self) -> int:
         return len(self.tests) - len(self.failures) - len(self.skips) - len(self.errors)
 
 
-    def add_test_result(self, result: TestRunResultTranscript | None):
+    def add_test_result(self, result: TestRunResultTranscript | None) -> None:
         if result is None:
             return
         if result.type.endswith('AssertionFailure'):
@@ -219,19 +222,19 @@ class TestRunTranscriptSummary:
             self.errors.append(result)
 
 
-    def add_session_result(self, result: TestRunResultTranscript | None):
+    def add_session_result(self, result: TestRunResultTranscript | None) -> None:
         if result is None:
             return
         self.errors_outside_tests.append(result)
 
 
-    def add_run_result(self, result: TestRunResultTranscript | None):
+    def add_run_result(self, result: TestRunResultTranscript | None) -> None:
         if result is None:
             return
         self.errors_outside_tests.append(result)
 
 
-    def add_run_test(self, run_test: Optional['TestRunTestTranscript']):
+    def add_run_test(self, run_test: TestRunTestTranscript | None) -> None:
         if run_test is None:
             return
         self.tests.append(run_test)
@@ -244,7 +247,7 @@ class TestRunTestStepTranscript(msgspec.Struct):
     result : TestRunResultTranscript | None
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"TestStep {self.plan_step_index}"
 
 
@@ -287,7 +290,7 @@ class TestRunTestTranscript(msgspec.Struct):
         return ret
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Test {self.plan_test_index}"
 
 
@@ -304,7 +307,7 @@ class TestRunSessionTranscript(msgspec.Struct):
     result : TestRunResultTranscript | None
 
 
-    def build_summary(self, augment_this: TestRunTranscriptSummary | None = None ):
+    def build_summary(self, augment_this: TestRunTranscriptSummary | None = None ) -> TestRunTranscriptSummary:
         ret = augment_this or TestRunTranscriptSummary()
         ret.add_session_result(self.result)
 
@@ -315,7 +318,7 @@ class TestRunSessionTranscript(msgspec.Struct):
         return ret
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Test Run Session { self.run_session_index + 1 }/{ self.total_sessions }"
         # +1 for what humans expect when it says 1/2
 
@@ -338,7 +341,7 @@ class TestRunTranscript(msgspec.Struct):
     feditest_version: str = FEDITEST_VERSION
 
 
-    def build_summary(self, augment_this: TestRunTranscriptSummary | None = None ):
+    def build_summary(self, augment_this: TestRunTranscriptSummary | None = None ) -> TestRunTranscriptSummary:
         ret = augment_this or TestRunTranscriptSummary()
         ret.add_run_result(self.result)
 
@@ -363,28 +366,27 @@ class TestRunTranscript(msgspec.Struct):
 
 
     @staticmethod
-    def load(filename: str) -> 'TestRunTranscript':
+    def load(filename: str) -> TestRunTranscript:
         """
         Read a file, and instantiate a TestRunTranscript from what we find.
         """
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             transcript_json = json.load(f)
 
         return msgspec.convert(transcript_json, type=TestRunTranscript)
 
 
-    def is_compatible_type(self):
+    def is_compatible_type(self) -> bool:
         return self.type is None or self.type == 'feditest-testrun-transcript'
 
 
-    def has_compatible_version(self):
+    def has_compatible_version(self) -> bool:
         if not self.feditest_version:
             return True
         return self.feditest_version == FEDITEST_VERSION
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.plan.name:
             return str(self.plan.name)
         return 'Test Run'
-

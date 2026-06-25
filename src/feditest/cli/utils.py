@@ -121,7 +121,7 @@ def create_constellations_from_files(args: Namespace) -> list[TestPlanConstellat
         try:
             constellations.append(TestPlanConstellation.load(constellation_file))
         except ValidationError as e:
-            raise ArgumentError(None, f'Constellation file { constellation_file }: { e }')
+            raise ArgumentError(None, f'Constellation file { constellation_file }: { e }') from e
     return constellations
 
 
@@ -153,7 +153,7 @@ def create_constellation_from_default() -> TestPlanConstellation | None:
     try:
         return TestPlanConstellation.load(DEFAULT_CONSTELLATION_FILE)
     except ValidationError as e:
-        raise ArgumentError(None, f'Default constellation file { DEFAULT_CONSTELLATION_FILE }: { e }')
+        raise ArgumentError(None, f'Default constellation file { DEFAULT_CONSTELLATION_FILE }: { e }') from e
 
 
 def _help_for_default_dirs(dirs: list[str]) -> str:

@@ -27,14 +27,14 @@ HOSTNAME_PAR = TestPlanNodeParameter(
 )
 
 
-class Account(ABC):
+class Account(ABC): # noqa: B024 - intentional ABC without abstract methods
     """
     The notion of an existing account on a Node. As different Nodes have different ideas about
     what they know about an Account, this is an entirely abstract base class here.
     """
-    def __init__(self, role: str | None):
+    def __init__(self, role: str | None) -> None:
         self._role = role
-        self._node : 'Node | None' = None
+        self._node : Node | None = None
 
 
     @property
@@ -42,7 +42,7 @@ class Account(ABC):
         return self._role
 
 
-    def set_node(self, node: 'Node') -> None:
+    def set_node(self, node: Node) -> None:
         """
         Set the Node at which this is an Account. This is invoked exactly once after the Node
         has been instantiated (the Account is instantiated earlier).
@@ -53,21 +53,21 @@ class Account(ABC):
 
 
     @property
-    def node(self) -> 'Node':
+    def node(self) -> Node:
         if self._node:
             return self._node
         else:
             raise Exception('Invalid initialization')
 
 
-class NonExistingAccount(ABC):
+class NonExistingAccount(ABC): # noqa: B024 - intentional ABC without abstract methods
     """
     The notion of a non-existing account on a Node. As different Nodes have different ideas about
     what they know about an Account, this is an entirey abstract base class here.
     """
-    def __init__(self, role: str | None):
+    def __init__(self, role: str | None) -> None:
         self._role = role
-        self._node : 'Node | None' = None
+        self._node : Node | None = None
 
 
     @property
@@ -75,7 +75,7 @@ class NonExistingAccount(ABC):
         return self._role
 
 
-    def set_node(self, node: 'Node') -> None:
+    def set_node(self, node: Node) -> None:
         """
         Set the Node at which this is a NonExistingAccount. This is invoked exactly once after the Node
         has been instantiated (the NonExistingAccount is instantiated earlier).
@@ -85,7 +85,7 @@ class NonExistingAccount(ABC):
         self._node = node
 
     @property
-    def node(self) -> 'Node':
+    def node(self) -> Node:
         if self._node:
             return self._node
         else:
@@ -115,7 +115,7 @@ class AccountManager(ABC):
     TestPlan, or dynamically provisioning accounts etc.
     """
     @abstractmethod
-    def set_node(self, node: 'Node') -> None:
+    def set_node(self, node: Node) -> None:
         """
         Set the Node to which this AccountManager belongs. This is invoked exactly once after the Node
         has been instantiated (the AccountManager is instantiated earlier).
@@ -185,7 +185,7 @@ class AbstractAccountManager(AccountManager):
     by subclasses.
     As the name (but not the code) says, it is intended to be abstract. We love Python.
     """
-    def __init__(self, initial_accounts: list[Account] | None = None, initial_non_existing_accounts: list[NonExistingAccount] | None = None):
+    def __init__(self, initial_accounts: list[Account] | None = None, initial_non_existing_accounts: list[NonExistingAccount] | None = None) -> None:
         """
         Provide the accounts and non-existing-accounts that are known to exist/not exist
         when the Node is provisioned.
@@ -205,7 +205,7 @@ class AbstractAccountManager(AccountManager):
 
 
     @override
-    def set_node(self, node: 'Node') -> None:
+    def set_node(self, node: Node) -> None:
         if self._node:
             raise ValueError('Have Node already')
         self._node = node
@@ -337,12 +337,12 @@ class NodeConfiguration:
     so I rather not try)
     """
     def __init__(self,
-        node_driver: 'NodeDriver',
+        node_driver: NodeDriver,
         app: str,
         app_version: str | None = None,
         hostname: str | None = None,
         start_delay: float = 0.0
-    ):
+    ) -> None:
         if app and not appname_validate(app):
             raise NodeSpecificationInvalidError(node_driver, 'app', app)
         if app_version and not appversion_validate(app_version):
@@ -358,7 +358,7 @@ class NodeConfiguration:
 
 
     @property
-    def node_driver(self) -> 'NodeDriver':
+    def node_driver(self) -> NodeDriver:
         return self._node_driver
 
 
@@ -386,7 +386,7 @@ class NodeConfiguration:
         return f'NodeConfiguration: node driver: "{ self.node_driver }", app: "{ self.app }", hostname: "{ self.hostname }"'
 
 
-class Node(ABC):
+class Node(ABC): # noqa: B024 - intentional ABC without abstract methods
     """
     A Node is the interface through which FediTest talks to an application instance.
     Node itself is an abstract superclass.
@@ -405,7 +405,7 @@ class Node(ABC):
     allow FediTest to control and observe in a more fine-grained manner than could be
     reasonably expected from an implementation of the respective protocol.
     """
-    def __init__(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None = None):
+    def __init__(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager | None = None) -> None:
         """
         rolename: name of the role in the constellation
         config: the previously created configuration object for this Node
@@ -424,22 +424,22 @@ class Node(ABC):
 
 
     @property
-    def rolename(self):
+    def rolename(self) -> str:
         return self._rolename
 
 
     @property
-    def config(self):
+    def config(self) -> NodeConfiguration:
         return self._config
 
 
     @property
-    def hostname(self):
+    def hostname(self) -> str | None:
         return self._config.hostname
 
 
     @property
-    def node_driver(self):
+    def node_driver(self) -> NodeDriver:
         return self._config.node_driver
 
 
@@ -478,7 +478,7 @@ class Node(ABC):
         return f'"{ type(self).__name__}" in constellation role "{self.rolename}"'
 
 
-class NodeDriver(ABC):
+class NodeDriver(ABC): # noqa: B024 - intentional ABC without abstract methods
     """
     This is an abstract superclass for all objects that know how to instantiate Nodes of some kind.
     Any one subclass of NodeDriver is only instantiated once as a singleton
@@ -564,7 +564,7 @@ class NodeDriver(ABC):
         raise NotImplementedByNodeDriverError(self, NodeDriver._provision_node)
 
 
-    def _unprovision_node(self, node: Node) -> None:
+    def _unprovision_node(self, node: Node) -> None: # noqa: B027 - default does nothing
         """
         Invoked when a Node gets unprovisioned, in case cleanup needs to be performed.
         This is here so subclasses of NodeDriver can override it.
@@ -589,7 +589,7 @@ class SkipTestException(Exception):
     the circumstances in which it should be run are not currently present.
     Modeled after https://github.com/hamcrest/PyHamcrest/blob/main/src/hamcrest/core/assert_that.py
     """
-    def __init__(self, msg: str) :
+    def __init__(self, msg: str) -> None:
         """
         Provide reasoning why this test was skipped.
         """
@@ -605,7 +605,7 @@ class NotImplementedByNodeError(NotImplementedByNodeOrDriverError):
     This exception is raised when a Node cannot perform a certain operation because it
     has not been implemented in this subtype of Node.
     """
-    def __init__(self, node: Node, method: Callable[...,Any], arg: Any = None ):
+    def __init__(self, node: Node, method: Callable[...,Any], arg: Any = None) -> None: # noqa: ANN401 Any is fine
         super().__init__(f"Not implemented by node {node}: {method.__name__}" + (f" ({ arg })" if arg else ""))
 
 
@@ -614,7 +614,7 @@ class NotImplementedByNodeDriverError(NotImplementedByNodeOrDriverError):
     This exception is raised when a Node cannot perform a certain operation because it
     has not been implemented in this subtype of Node.
     """
-    def __init__(self, node_driver: NodeDriver, method: Callable[...,Any], arg: Any = None ):
+    def __init__(self, node_driver: NodeDriver, method: Callable[...,Any], arg: Any = None) -> None:  # noqa: ANN401 Any is fine
         super().__init__(f"Not implemented by node driver {node_driver}: {method.__name__}" + (f" ({ arg })" if arg else ""))
 
 
@@ -624,7 +624,7 @@ class NodeOutOfAccountsException(RuntimeError):
     known, no account could be automatically provisioned, or all known or provisionable
     accounts were returned already.
     """
-    def __init__(self, node: NodeDriver, rolename: str ):
+    def __init__(self, node: NodeDriver, rolename: str) -> None:
         super().__init__(f"Out of accounts on Node { node }, account role { rolename }" )
 
 
@@ -633,7 +633,7 @@ class NodeSpecificationInsufficientError(RuntimeError):
     This exception is raised when a NodeDriver cannot instantiate a Node because insufficient
     information (parameters) has been provided.
     """
-    def __init__(self, node_driver: NodeDriver, details: str ):
+    def __init__(self, node_driver: NodeDriver, details: str) -> None:
         super().__init__(f"Node specification is insufficient for {node_driver}: {details}" )
 
 
@@ -642,5 +642,5 @@ class NodeSpecificationInvalidError(RuntimeError):
     This exception is raised when a NodeDriver cannot instantiate a Node because invalid
     information (e.g. a syntax error in a parameter) has been provided.
     """
-    def __init__(self, node_driver: NodeDriver, parameter: str, details: str ):
+    def __init__(self, node_driver: NodeDriver, parameter: str, details: str) -> None:
         super().__init__(f"Node specification is invalid for {node_driver}, parameter {parameter}: {details}" )

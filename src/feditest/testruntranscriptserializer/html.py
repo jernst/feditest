@@ -3,7 +3,8 @@ import html
 import os.path
 import re
 import shutil
-from typing import Any, Iterator, cast, override
+from typing import Any, cast, override
+from collections.abc import Iterator
 
 import jinja2
 
@@ -13,7 +14,11 @@ from feditest.testruntranscript import TestMetaTranscript, TestRunResultTranscri
 from feditest.testruntranscriptserializer import TestRunTranscriptSerializer
 
 
-def _get_results_for(run_transcript: TestRunTranscript, session_transcript: TestRunSessionTranscript, test_meta: TestMetaTranscript) -> Iterator[TestRunResultTranscript | None]:
+def _get_results_for(
+        run_transcript: TestRunTranscript,
+        session_transcript: TestRunSessionTranscript,
+        test_meta: TestMetaTranscript
+    ) -> Iterator[TestRunResultTranscript | None]:
     """
     Determine the set of test results running test_meta within session_transcript, and return it as an Iterator.
     This is a set, not a single value, because we might run the same test multiple times (perhaps with differing role
@@ -54,7 +59,7 @@ class HtmlRunTranscriptSerializer(TestRunTranscriptSerializer):
     A CSS file will be written to the provided destination with an extra extension.
     """
 
-    def __init__(self, template_path: str | None = None):
+    def __init__(self, template_path: str | None = None) -> None:
         if template_path:
             self.template_path = [ t.strip() for t in template_path.split(",") ]
         else:
@@ -70,7 +75,7 @@ class HtmlRunTranscriptSerializer(TestRunTranscriptSerializer):
 
 
     @override
-    def write(self, transcript: TestRunTranscript, dest: str | None):
+    def write(self, transcript: TestRunTranscript, dest: str | None) -> None:
         if dest is None:
             fatal('Cannot write --html to stdout.')
             return # make linter happy
@@ -118,7 +123,7 @@ class HtmlRunTranscriptSerializer(TestRunTranscriptSerializer):
                 break
 
 
-    def write_single_session(self, transcript: TestRunTranscript, context: dict[str, Any], dest: str):
+    def write_single_session(self, transcript: TestRunTranscript, context: dict[str, Any], dest: str) -> None:
         run_session = transcript.sessions[0]
         context.update(
             transcript=transcript,
@@ -130,7 +135,7 @@ class HtmlRunTranscriptSerializer(TestRunTranscriptSerializer):
             fp.write(session_template.render(**context))
 
 
-    def write_matrix_and_sessions(self, transcript: TestRunTranscript, context: dict[str, Any], dest: str):
+    def write_matrix_and_sessions(self, transcript: TestRunTranscript, context: dict[str, Any], dest: str) -> None:
         matrix_context = dict(context)
         matrix_context.update(
             transcript=transcript,

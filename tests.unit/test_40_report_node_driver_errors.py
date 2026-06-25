@@ -25,7 +25,7 @@ class NodeDriverTestException(Exception):
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init():
+def init() -> None:
     global node_driver_name
 
     """ Keep these isolated to this module """

@@ -120,7 +120,7 @@ class UbosAdminException(Exception):
     """
     Thrown if a `ubos-admin` operation failed.
     """
-    def __init__(self, node_driver: 'UbosNodeDriver', cmd: str, indata: str | None = None, stdout: str | None = None, stderr: str | None = None):
+    def __init__(self, node_driver: UbosNodeDriver, cmd: str, indata: str | None = None, stdout: str | None = None, stderr: str | None = None) -> None:
         msg = f'node_driver: { node_driver }, cmd: "{ cmd }"'
         if indata:
             msg += f'\ninput data: { indata }'
@@ -136,7 +136,7 @@ class UbosNodeConfiguration(NodeConfiguration):
     Adds configuration information specific to UBOS. This is an abstract superclass.
     """
     def __init__(self,
-        node_driver: 'UbosNodeDriver',
+        node_driver: UbosNodeDriver,
         siteid: str,
         appconfigid: str,
         appconfigjson: dict[str,Any],
@@ -151,7 +151,7 @@ class UbosNodeConfiguration(NodeConfiguration):
         tlscert: str | None = None,
         start_delay: float = 0.0,
         rshcmd: str | None = None,
-    ):
+    ) -> None:
         super().__init__(node_driver, app, app_version, hostname, start_delay)
         self._siteid = siteid
         self._appconfigid = appconfigid
@@ -166,23 +166,23 @@ class UbosNodeConfiguration(NodeConfiguration):
 
 
     @staticmethod
-    def _generate_siteid():
+    def _generate_siteid() -> str:
         ret = 's'
-        for i in range(40):
+        for _ in range(40):
             ret += format(secrets.randbelow(16), 'x')
         return ret
 
 
     @staticmethod
-    def _generate_appconfigid():
+    def _generate_appconfigid() -> str:
         ret = 'a'
-        for i in range(40):
+        for _ in range(40):
             ret += format(secrets.randbelow(16), 'x')
         return ret
 
 
     @staticmethod
-    def _generate_credential():
+    def _generate_credential() -> str:
         chars = string.ascii_letters + string.digits + "_-%"
         ret = ''.join(random.choice(chars) for i in range(16))
         return ret
@@ -191,10 +191,10 @@ class UbosNodeConfiguration(NodeConfiguration):
     @staticmethod
     def create_from_node_in_testplan(
         test_plan_node: TestPlanConstellationNode,
-        node_driver: 'UbosNodeDriver',
+        node_driver: UbosNodeDriver,
         appconfigjson: dict[str, Any],
         defaults: dict[str, str | None] | None = None
-    ) -> 'UbosNodeConfiguration':
+    ) -> UbosNodeConfiguration:
         """
         Parses the information provided in the "parameters" dict of TestPlanConstellationNode
         """
@@ -291,7 +291,7 @@ class UbosNodeConfiguration(NodeConfiguration):
 
         if self._hostname:
             ret += self._hostname
-        
+
         context = self.context
         if context:
             ret += context
@@ -319,7 +319,7 @@ class UbosNodeConfiguration(NodeConfiguration):
         return self._admin_email
 
 
-    def get_customizationpoint_value(self, name: str) -> Any:
+    def get_customizationpoint_value(self, name: str) -> Any: # noqa: ANN401 Any is fine
         customizationpoints_json = self._appconfigjson.get('customizationpoints')
         if customizationpoints_json is None:
             return None
@@ -379,7 +379,7 @@ class UbosNodeFromBackupConfiguration(UbosNodeConfiguration):
     Configuration of a UBOS Node that is instantiated from a backup file with 'ubos-admin restore'
     """
     def __init__(self,
-        node_driver: 'UbosNodeDriver',
+        node_driver: UbosNodeDriver,
         siteid: str,
         appconfigid: str,
         appconfigjson: dict[str, Any],
@@ -396,7 +396,7 @@ class UbosNodeFromBackupConfiguration(UbosNodeConfiguration):
         tlscert: str | None = None,
         start_delay: float = 0.0,
         rshcmd: str | None = None,
-    ):
+    ) -> None:
         super().__init__(
             node_driver = node_driver,
             siteid = siteid,
@@ -448,12 +448,12 @@ class UbosNodeFromBackupConfiguration(UbosNodeConfiguration):
 
 
     @property
-    def backupfile(self):
+    def backupfile(self) -> str:
         return self._backupfile
 
 
     @property
-    def backup_appconfigid(self):
+    def backup_appconfigid(self) -> str:
         return self._backup_appconfigid
 
 
@@ -596,7 +596,7 @@ class UbosNodeDriver(NodeDriver):
             raise UbosAdminException(self, cmd, result.stdout, result.stderr)
 
 
-    def _cleanup_node(self, config: UbosNodeConfiguration):
+    def _cleanup_node(self, config: UbosNodeConfiguration) -> None:
         trace('Cleaning up Node provisioned with UbosNodeDriver')
         self._exec_shell( f"sudo ubos-admin undeploy --siteid { config.siteid }", config.rshcmd ) # ignore errors
 

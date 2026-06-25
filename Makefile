@@ -35,16 +35,24 @@ venv : $(VENV)
 $(VENV) :
 	@which $(PYTHON) || ( echo 'No executable called "python". Append your python to the make command, like "make PYTHON=your-python"' && false )
 	$(PYTHON) -mvenv $(VENV)
-	$(VENV)/bin/pip install ruff mypy pylint
+	$(VENV)/bin/pip install ruff pyright mypy pylint hatchling
 
-lint : build
+lint : build lint-ruff lint-pyright lint-mypy 
+# lint-pylint --not running by default, too many overly picky results
+
+lint-ruff :
 	$(VENV)/bin/ruff check
+
+lint-pyright :
+	$(VENV)/bin/pyright src
+
+lint-mypy :
 	MYPYPATH=src $(VENV)/bin/mypy --namespace-packages --explicit-package-bases --install-types --non-interactive src
 	@# These options should be the same flags as in .pre-commit-config.yml, except that I can't get it to
 	@# work there without the "--ignore-missing-imports" flag, while it does work without it here
 
-	@# MYPYPATH is needed because apparently some type checking ignores the directory option given as command-line argument
-	@# $(VENV)/bin/pylint src
+lint-pylint :
+	@ $(VENV)/bin/pylint src
 
 tests : tests.unit tests.smoke
 
@@ -77,4 +85,4 @@ release :
 	@echo The actual push to pypi.org you need to do manually. Enter:
 	@echo venv.release/bin/twine upload dist/*
 
-.PHONY: all default venv build lint tests tests.unit tests.smoke tests.smoke.webfinger tests.smoke.api tests.smoke.fediverse release
+.PHONY: all default venv build lint lint-ruff lint-pyright lint-mypy lint-pylint tests tests.unit tests.smoke tests.smoke.webfinger tests.smoke.api tests.smoke.fediverse release

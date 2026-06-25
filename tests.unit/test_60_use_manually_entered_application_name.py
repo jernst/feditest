@@ -28,7 +28,7 @@ APP_NAMES = [
 # Use the default NodeDrivers
 
 @pytest.fixture(scope="module", autouse=True)
-def init_node_drivers():
+def init_node_drivers() -> None:
     """
     Cleanly define the NodeDrivers.
     """
@@ -36,7 +36,7 @@ def init_node_drivers():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_tests():
+def init_tests() -> None:
     """
     Cleanly define some tests.
     """
@@ -170,7 +170,7 @@ def session0_html_soup(html_base_name: str) -> BeautifulSoup:
 
 ## Main HTML doc
 
-def test_main_title(main_html_soup: BeautifulSoup):
+def test_main_title(main_html_soup: BeautifulSoup) -> None:
     title = main_html_soup.head.title.string
 
     # Don't have an empty string prior to the |
@@ -180,13 +180,13 @@ def test_main_title(main_html_soup: BeautifulSoup):
     assert 'None' not in title
 
 
-def test_main_h1(main_html_soup: BeautifulSoup):
+def test_main_h1(main_html_soup: BeautifulSoup) -> None:
     # Don't have 'None" in the title
     *_, h1 = main_html_soup.body.header.h1.strings
     assert 'None' not in h1
 
 
-def test_main_app_properties(main_html_soup: BeautifulSoup):
+def test_main_app_properties(main_html_soup: BeautifulSoup) -> None:
     # Use 'app' properties, not FediverseSaasNodeDriver
     for dl in main_html_soup.body.find_all('dl', class_='roles'):
         for dd in dl.find_all('dd'):
@@ -194,7 +194,7 @@ def test_main_app_properties(main_html_soup: BeautifulSoup):
 
 # Session HTML doc
 
-def test_session0_title(session0_html_soup: BeautifulSoup):
+def test_session0_title(session0_html_soup: BeautifulSoup) -> None:
     title = session0_html_soup.head.title.string
 
     # Don't have an empty string prior to the |
@@ -204,7 +204,7 @@ def test_session0_title(session0_html_soup: BeautifulSoup):
     assert 'Session 0' not in title
 
 
-def test_session0_h1(session0_html_soup: BeautifulSoup):
+def test_session0_h1(session0_html_soup: BeautifulSoup) -> None:
     *_, h1 = session0_html_soup.body.header.h1.strings
 
     # Don't have an empty string prior to the |

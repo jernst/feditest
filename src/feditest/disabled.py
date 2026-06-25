@@ -8,7 +8,7 @@
 #     from feditest.disabled import AssertionFailure, InteropLevel, SpecLevel, step, test
 #
 
-from typing import Callable
+from collections.abc import Callable
 
 from feditest import AssertionFailure, InteropLevel, SpecLevel, all_node_drivers, all_tests, assert_that, nodedriver  # noqa: F401
 

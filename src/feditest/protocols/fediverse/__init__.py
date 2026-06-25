@@ -42,7 +42,7 @@ USERID_NON_EXISTING_ACCOUNT_FIELD = TestPlanNodeNonExistingAccountField(
 
 
 class FediverseAccount(Account):
-    def __init__(self, role: str | None, userid: str):
+    def __init__(self, role: str | None, userid: str) -> None:
         """
         actor_localid: the local id of the actor on this node, such as "joe" if the corresponding
         acct URI is acct:joe@example.com
@@ -52,7 +52,7 @@ class FediverseAccount(Account):
 
 
     @staticmethod
-    def create_from_account_info_in_testplan(account_info_in_testplan: dict[str, str | None], context_msg: str = ''):
+    def create_from_account_info_in_testplan(account_info_in_testplan: dict[str, str | None], context_msg: str = '') -> FediverseAccount:
         """
         Parses the information provided in an "account" dict of TestPlanConstellationNode
         """
@@ -62,23 +62,23 @@ class FediverseAccount(Account):
 
 
     @property
-    def userid(self):
+    def userid(self) -> str:
         return self._userid
 
 
     @property
-    def actor_acct_uri(self):
+    def actor_acct_uri(self) -> str:
         return f'acct:{ self._userid }@{ self.node.hostname }'
 
 
 class FediverseNonExistingAccount(NonExistingAccount):
-    def __init__(self, role: str | None, userid: str):
+    def __init__(self, role: str | None, userid: str) -> None:
         super().__init__(role)
         self._userid = userid
 
 
     @staticmethod
-    def create_from_non_existing_account_info_in_testplan(non_existing_account_info_in_testplan: dict[str, str | None], context_msg: str = ''):
+    def create_from_non_existing_account_info_in_testplan(non_existing_account_info_in_testplan: dict[str, str | None], context_msg: str = '') -> FediverseNonExistingAccount:
         """
         Parses the information provided in an "non_existing_account" dict of TestPlanConstellationNode
         """
@@ -88,12 +88,12 @@ class FediverseNonExistingAccount(NonExistingAccount):
 
 
     @property
-    def userid(self):
+    def userid(self) -> str:
         return self._userid
 
 
     @property
-    def actor_acct_uri(self):
+    def actor_acct_uri(self) -> str:
         return f'acct:{ self._userid }@{ self.node.hostname }'
 
 

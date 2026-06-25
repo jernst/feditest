@@ -15,7 +15,7 @@ from feditest.protocols.fediverse import (
 )
 
 @pytest.fixture(scope="module", autouse=True)
-def init():
+def init() -> None:
     """ Clean init """
     feditest.all_tests = {}
     feditest._registered_as_test = {}

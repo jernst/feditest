@@ -10,13 +10,14 @@ import re
 import sys
 import importlib.metadata
 from types import ModuleType
-from typing import Any, Callable, List, Optional, TypeVar, override
+from typing import Any, override
+from collections.abc import Callable
 from urllib.parse import ParseResult, parse_qs, urlparse
 from langcodes import Language
 
 from feditest.reporting import warning
 
-def _version(default_version="0.0.0"):
+def _version(default_version : str = "0.0.0") -> str :
     try:
         return importlib.metadata.version("feditest")
     except importlib.metadata.PackageNotFoundError:
@@ -29,7 +30,26 @@ ACCT_REGEX = re.compile(r"acct:([-a-zA-Z0-9\._~][-a-zA-Z0-9\._~!$&'\(\)\*\+,;=%]
 SSH_REGEX = re.compile(r"ssh://([-a-z-A-Z0-9\._~!$&'\(\)\*\+,;=%:]+@)?([-a-zA-Z0-9\.:]+)(:[0-9]+)?")
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+$")
 
-T = TypeVar("T")
+
+type JSONElement = (
+    None
+    | bool
+    | int
+    | float
+    | str
+    | JSONList
+    | JSONObject
+)
+type JSONList = list[JSONElement]
+type JSONObject = dict[str, JSONElement]
+
+
+def checked_cast[T](typ: type[T], value: object) -> T:
+    if not isinstance(value, typ):
+        raise TypeError(
+            f"Expected {typ.__name__}, got {type(value).__name__}"
+        )
+    return value
 
 
 class ParsedUri(ABC):
@@ -39,7 +59,7 @@ class ParsedUri(ABC):
     Because the structure is so different, we have subtypes.
     """
     @staticmethod
-    def parse(url: str, scheme='', allow_fragments=True) -> Optional['ParsedUri']:
+    def parse(url: str, scheme : str = '', allow_fragments : bool =True) -> ParsedUri | None:
         """
         The equivalent of urlparse(str)
         """
@@ -71,7 +91,7 @@ class ParsedNonAcctUri(ParsedUri):
     """
     ParsedUris that are "normal" URIs such as http URIs.
     """
-    def __init__(self, scheme: str, netloc: str, path: str, params: str, query: str, fragment: str):
+    def __init__(self, scheme: str, netloc: str, path: str, params: str, query: str, fragment: str) -> None:
         self._scheme = scheme
         self._netloc = netloc
         self._path = path
@@ -148,7 +168,7 @@ class ParsedNonAcctUri(ParsedUri):
         return None
 
 
-    def query_param_mult(self, name: str) -> List[str] | None:
+    def query_param_mult(self, name: str) -> list[str] | None:
         self._parse_query_params()
         if self._query_params:
             return self._query_params.get(name)
@@ -156,11 +176,11 @@ class ParsedNonAcctUri(ParsedUri):
 
 
     @override
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'ParsedNonAcctUri({ self.uri })'
 
 
-    def _parse_query_params(self):
+    def _parse_query_params(self) -> None:
         if self._query_params:
             return
         if self._query:
@@ -173,7 +193,7 @@ class ParsedAcctUri(ParsedUri):
     """
     ParsedUris that are acct: URIs
     """
-    def __init__(self, user: str, host: str):
+    def __init__(self, user: str, host: str) -> None:
         self._user = user
         self._host = host
 
@@ -201,7 +221,7 @@ class ParsedAcctUri(ParsedUri):
 
 
     @override
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'ParsedAcctUri({ self.uri })'
 
 
@@ -250,7 +270,7 @@ def load_python_from(dirs: list[str], skip_init_files: bool) -> None:
             sys.path = sys_path_before
 
 
-def boolean_parse_validate(candidate: Any | None) -> bool | None:
+def boolean_parse_validate(candidate: Any) -> bool | None: # noqa: ANN401 Any is fine
     """
     Validate that the provided string represents a boolean.
     Return the boolean if valid, None otherwise
@@ -501,7 +521,7 @@ def symbolic_name_validate(candidate_name: str) -> str | None:
     return None
 
 
-def find_first_in_array(array: List[T], condition: Callable[[T], bool]) -> T | None:
+def find_first_in_array[T](array: list[T], condition: Callable[[T], bool]) -> T | None:
     """
     IMHO this should be a python built-in function. The next() workaround confuses me more than I like.
     """
@@ -546,7 +566,7 @@ def format_name_value_string(data: dict[str,str | None]) -> str:
     return ret
 
 
-def prompt_user_parse_validate(question: str, parse_validate: Callable[[str],T | None]) -> T:
+def prompt_user_parse_validate[T](question: str, parse_validate: Callable[[str],T | None]) -> T:
     """
     Prompt the user to enter a text string at the console. Parse/validate the entered
     String, and keep asking until validation passes. Return the parsed string.

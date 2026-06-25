@@ -8,7 +8,7 @@ class SummaryTestRunTranscriptSerializer(FileOrStdoutTestRunTranscriptSerializer
     """
     Knows how to serialize a TestRunTranscript into a single-line summary.
     """
-    def _write(self, transcript: TestRunTranscript, fd: IO[str]):
+    def _write(self, transcript: TestRunTranscript, fd: IO[str]) -> None:
         summary = transcript.build_summary()
 
         print(f'Test summary: total={ summary.n_total }'

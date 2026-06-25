@@ -11,7 +11,7 @@ class TestRunTranscriptSerializer(ABC):
     An object that knows how to serialize a TestRunTranscript into some output format.
     """
     @abstractmethod
-    def write(self, transcript: TestRunTranscript, dest: str | None):
+    def write(self, transcript: TestRunTranscript, dest: str | None) -> None:
         ...
 
 

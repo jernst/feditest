@@ -28,7 +28,7 @@ from feditest.testplan import TestPlanConstellationNode, TestPlanNodeParameterMa
 
 class MastodonUbosNodeConfiguration(UbosNodeDeployConfiguration, NodeWithMastodonApiConfiguration):
     def __init__(self,
-        node_driver: 'UbosNodeDriver',
+        node_driver: UbosNodeDriver,
         siteid: str,
         appconfigid: str,
         appconfigjson: dict[str,Any],
@@ -43,7 +43,7 @@ class MastodonUbosNodeConfiguration(UbosNodeDeployConfiguration, NodeWithMastodo
         tlscert: str | None = None,
         start_delay: float = 0.0,
         rshcmd: str | None = None,
-    ):
+    ) -> None:
         super(UbosNodeDeployConfiguration,self).__init__(
             node_driver = node_driver,
             siteid = siteid,
@@ -69,10 +69,10 @@ class MastodonUbosNodeConfiguration(UbosNodeDeployConfiguration, NodeWithMastodo
     @staticmethod
     def create_from_node_in_testplan(
         test_plan_node: TestPlanConstellationNode,
-        node_driver: 'UbosNodeDriver',
+        node_driver: UbosNodeDriver,
         appconfigjson: dict[str, Any],
         defaults: dict[str, str | None] | None = None
-    ) -> 'UbosNodeConfiguration':
+    ) -> UbosNodeConfiguration:
         """
         This is largely copied from the superclass.
         """

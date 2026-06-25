@@ -13,7 +13,7 @@ from feditest import test
 
 
 class DummyNode(Node):
-    def missing_method(self):
+    def missing_method(self) -> None:
         pass
 
 
@@ -22,12 +22,12 @@ class DummyNodeDriver(NodeDriver):
         return DummyNode(rolename, config, account_manager)
 
 
-    def missing_method(self):
+    def missing_method(self) -> None:
         pass
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_node_drivers():
+def init_node_drivers() -> None:
     """
     Cleanly define the NodeDrivers.
     """
@@ -36,7 +36,7 @@ def init_node_drivers():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_tests():
+def init_tests() -> None:
     """
     Cleanly define some tests.
     """
@@ -82,7 +82,7 @@ def test_plan_fixture() -> TestPlan:
     return ret
 
 
-def test_run_testplan(test_plan_fixture: TestPlan):
+def test_run_testplan(test_plan_fixture: TestPlan) -> None:
     test_plan_fixture.check_can_be_executed()
 
     test_run = TestRun(test_plan_fixture)

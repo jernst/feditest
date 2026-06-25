@@ -3,6 +3,7 @@ Test that Accounts and NonExistingAccounts are parsed correctly when given in a 
 specifies a MastodonUbosNodeDriver
 """
 
+from collections.abc import Iterator
 from typing import cast
 
 import pytest
@@ -31,7 +32,7 @@ NODE1_ROLE = 'node1-role'
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init():
+def init() -> None:
     """ Clean init """
     feditest.all_tests = {}
     feditest._registered_as_test = {}
@@ -43,7 +44,7 @@ def init():
 
 
 @pytest.fixture(autouse=True)
-def set_global_variable():
+def set_global_variable() -> Iterator[None]:
     # before test
     feditest.DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = True
 

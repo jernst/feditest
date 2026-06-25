@@ -35,9 +35,12 @@ from feditest.testplan import (
 )
 from feditest.utils import (
     boolean_parse_validate,
+    checked_cast,
     email_validate,
     find_first_in_array,
     prompt_user_parse_validate,
+    JSONElement,
+    JSONObject,
     ParsedUri,
     ParsedAcctUri
 )
@@ -90,7 +93,7 @@ def mastodon_api_invoke_get_or_delete(
     session: requests.Session,
     path: str,
     headers: dict[str,str] | None
-) -> dict[str,Any]:
+) -> JSONElement:
     method = method.lower()
     url = api_base_url + path
     real_headers = {
@@ -104,7 +107,7 @@ def mastodon_api_invoke_get_or_delete(
     if is_trace_active():
         curl = f'curl { url }'
         if method != 'GET':
-            curl += f' -X { method }'
+            curl += f' -X { method.upper() }' # Mastodon does not respond to lowercase when using curl
         for key, value in real_headers.items():
             curl += f' -H "{ key }: { value }"'
         trace(f'Mastodon API call as curl: { curl }')
@@ -137,7 +140,7 @@ def mastodon_api_invoke_post_or_put(
     path: str,
     args: dict[str,str] | None = None,
     headers: dict[str,str] | None = None
-) -> dict[str,Any]:
+) -> JSONElement:
     method = method.lower()
     url = api_base_url + path
     real_headers = {
@@ -189,7 +192,7 @@ class MastodonOAuthApp:
     session : requests.Session # Use this session which has the right CA certs
 
     @staticmethod
-    def create(api_base_url: str, session: requests.Session) -> 'MastodonOAuthApp':
+    def create(api_base_url: str, session: requests.Session) -> MastodonOAuthApp:
         args = {
             'client_name' : 'feditest',
             'redirect_uris' : 'urn:ietf:wg:oauth:2.0:oob',
@@ -198,15 +201,15 @@ class MastodonOAuthApp:
 
         }
         result = mastodon_api_invoke_post_or_put('POST', api_base_url, session, '/api/v1/apps', args=args)
-        client_id = result['client_id']
-        client_secret = result['client_secret']
+        client_id = checked_cast(dict, result)['client_id']
+        client_secret = checked_cast(dict,result)['client_secret']
 
         trace(f'Created Mastodon app with client_id="{ client_id }", client_secret="{ client_secret }".')
         return MastodonOAuthApp(client_id, client_secret, api_base_url, session)
 
 
 class AuthenticatedMastodonApiClient:
-    def __init__(self, app: MastodonOAuthApp, account: 'AccountOnNodeWithMastodonAPI', bearer_token: str):
+    def __init__(self, app: MastodonOAuthApp, account: AccountOnNodeWithMastodonAPI, bearer_token: str) -> None:
         """
         Represents an authenticated client to a Mastodon instance, for client acct_uri with bearer_token
         """
@@ -217,23 +220,23 @@ class AuthenticatedMastodonApiClient:
         }
 
 
-    def http_get(self, path: str) -> Any:
+    def http_get(self, path: str) -> JSONElement:
         return mastodon_api_invoke_get_or_delete('GET', self._app.api_base_url, self._app.session, path, self._auth_header)
 
 
-    def http_post(self, path: str, args: dict[str,str] | None = None) -> Any:
+    def http_post(self, path: str, args: dict[str,str] | None = None) -> JSONElement:
         return mastodon_api_invoke_post_or_put('POST', self._app.api_base_url, self._app.session, path, args=args, headers=self._auth_header)
 
 
-    def http_put(self, path: str, args: dict[str,str] | None = None) -> Any:
+    def http_put(self, path: str, args: dict[str,str] | None = None) -> JSONElement:
         return mastodon_api_invoke_post_or_put('PUT', self._app.api_base_url, self._app.session, path, args=args, headers=self._auth_header)
 
 
-    def http_delete(self, path: str) -> Any:
+    def http_delete(self, path: str) -> JSONElement:
         return mastodon_api_invoke_get_or_delete('DELETE', self._app.api_base_url, self._app.session, path, self._auth_header)
 
 
-    def make_follow(self, to_follow_actor_acct_uri: str) -> dict[str, str]:
+    def make_follow(self, to_follow_actor_acct_uri: str) -> JSONElement:
         if to_follow_account := self._find_account_dict_by_other_actor_acct_uri(to_follow_actor_acct_uri):
             local_to_follow_account_id = to_follow_account['id']
             response = self.http_post(f'/api/v1/accounts/{ local_to_follow_account_id }/follow')
@@ -241,7 +244,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find account for Actor on { self }: "{ to_follow_actor_acct_uri }"')
 
 
-    def make_unfollow(self, following_actor_acct_uri: str) -> dict[str,str]:
+    def make_unfollow(self, following_actor_acct_uri: str) -> JSONElement:
         if following_account := self._find_account_dict_by_other_actor_acct_uri(following_actor_acct_uri):
             following_account_id = following_account['id']
             response = self.http_post(f'/api/v1/accounts/{ following_account_id }/unfollow')
@@ -252,18 +255,18 @@ class AuthenticatedMastodonApiClient:
     def actor_is_following_actor(self, leader_actor_acct_uri: str) -> bool:
         this_account_id = self._account.internal_userid
         response = self.http_get(f'/api/v1/accounts/{ this_account_id }/following')
-        found = find_first_in_array(response, lambda r: r['acct'] == leader_actor_acct_uri[5:]) # remove acct:
+        found = find_first_in_array(checked_cast(list, response), lambda r: r['acct'] == leader_actor_acct_uri[5:]) # remove acct:
         return found is not None
 
 
     def actor_is_followed_by_actor(self, follower_actor_acct_uri: str) -> bool:
         this_account_id = self._account.internal_userid
         response = self.http_get(f'/api/v1/accounts/{ this_account_id }/followers')
-        found = find_first_in_array(response, lambda r: r['acct'] == follower_actor_acct_uri[5:]) # remove acct:
+        found = find_first_in_array(checked_cast(list, response), lambda r: r['acct'] == follower_actor_acct_uri[5:]) # remove acct:
         return found is not None
 
 
-    def make_create_note(self, content: str, deliver_to: list[str] | None = None) -> dict[str, str]:
+    def make_create_note(self, content: str, deliver_to: list[str] | None = None) -> JSONElement:
         if deliver_to: # The only way we can address specific accounts in Mastodon
             for to in deliver_to:
                 if to_account := self._find_account_dict_by_other_actor_acct_uri(to):
@@ -279,7 +282,7 @@ class AuthenticatedMastodonApiClient:
         return response
 
 
-    def update_note(self, note_uri: str, new_content: str) -> dict[str, Any]:
+    def update_note(self, note_uri: str, new_content: str) -> JSONElement:
         if note := self._find_note_dict_by_uri(note_uri):
             note_id = note['id']
             args = {
@@ -290,7 +293,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find Note on { self }: "{ note_uri }"')
 
 
-    def delete_object(self, note_uri: str) -> None:
+    def delete_object(self, note_uri: str) -> JSONElement:
         if note := self._find_note_dict_by_uri(note_uri):
             note_id = note['id']
             response = self.http_delete(f'/api/v1/statuses/{ note_id }')
@@ -298,7 +301,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find Note on { self }: "{ note_uri }"')
 
 
-    def make_reply_note(self, to_be_replied_to_object_uri: str, reply_content: str) -> dict[str, str]:
+    def make_reply_note(self, to_be_replied_to_object_uri: str, reply_content: str) -> JSONElement:
         if local_note := self._find_note_dict_by_uri(to_be_replied_to_object_uri):
             local_note_id = local_note['id']
 
@@ -311,7 +314,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find Note on { self }: "{ to_be_replied_to_object_uri }"')
 
 
-    def like_object(self, object_uri: str) -> None:
+    def like_object(self, object_uri: str) -> JSONElement:
         if note := self._find_note_dict_by_uri(object_uri):
             note_id = note['id']
             response = self.http_post(f'/api/v1/statuses/{ note_id }/favourite')
@@ -319,7 +322,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find Note on { self }: "{ object_uri }"')
 
 
-    def unlike_object(self, object_uri: str) -> None:
+    def unlike_object(self, object_uri: str) -> JSONElement:
         if note := self._find_note_dict_by_uri(object_uri):
             note_id = note['id']
             response = self.http_post(f'/api/v1/statuses/{ note_id }/unfavourite')
@@ -327,7 +330,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find Note on { self }: "{ object_uri }"')
 
 
-    def announce_object(self, object_uri: str) -> None:
+    def announce_object(self, object_uri: str) -> JSONElement:
         if note := self._find_note_dict_by_uri(object_uri):
             note_id = note['id']
             response = self.http_post(f'/api/v1/statuses/{ note_id }/reblog')
@@ -335,7 +338,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find Note on { self }: "{ object_uri }"')
 
 
-    def unannounce_object(self, object_uri: str) -> None:
+    def unannounce_object(self, object_uri: str) -> JSONElement:
         if note := self._find_note_dict_by_uri(object_uri):
             note_id = note['id']
             response = self.http_post(f'/api/v1/statuses/{ note_id }/unreblog')
@@ -343,33 +346,33 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find Note on { self }: "{ object_uri }"')
 
 
-    def actor_has_received_object(self,  object_uri: str) -> dict[str, Any]:
+    def actor_has_received_object(self,  object_uri: str) -> JSONElement:
         # Depending on how the Note is addressed and follow status, Mastodon puts it into the Home timeline or only
         # into notifications.
         # Check for it in the home timeline.
-        elements = self.http_get('/api/v1/timelines/home')
+        elements = checked_cast(list, self.http_get('/api/v1/timelines/home'))
         #   Home timeline first case: a post was created by an account we follow
-        response : dict[str,Any] | None = find_first_in_array(elements, lambda s: s['uri'] == object_uri)
+        response : JSONElement | None = find_first_in_array(elements, lambda s: s['uri'] == object_uri)
         if not response:
             #   Home timeline second case: an announce/boost was created by an account we follow -- need to look for the original URI
             if reblog_response := find_first_in_array(elements, lambda s: 'reblog' in s and s['reblog'] and 'uri' in s['reblog'] and s['reblog']['uri'] == object_uri) :
                 response = reblog_response['reblog']
         if not response:
             # Check for it in notifications: mentions arrive here
-            elements = self.http_get('/api/v1/notifications')
+            elements = checked_cast(list, self.http_get('/api/v1/notifications'))
             # s['status'] exists for some things in notifications, but not others (such as "follow")
             if notifications_response := find_first_in_array(elements, lambda s: 'status' in s and s['status']['uri'] == object_uri) :
                 response = notifications_response['status']
         return response if response else {}
 
 
-    def note_dict(self, note_uri: str) -> dict[str, Any]:
+    def note_dict(self, note_uri: str) -> JSONObject:
         if note := self._find_note_dict_by_uri(note_uri):
             return note
         raise ValueError(f'Cannot find Note on { self }: "{ note_uri }"')
 
 
-    def object_context(self, object_uri: str) -> dict[str,Any]:
+    def object_context(self, object_uri: str) -> JSONElement:
         if obj := self._find_note_dict_by_uri(object_uri):
             obj_id = obj['id']
             response = self.http_get(f'/api/v1/statuses/{ obj_id }/context')
@@ -377,7 +380,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find object on { self }: "{ object_uri }"')
 
 
-    def object_likers(self, object_uri: str) -> list[dict[str, Any]]:
+    def object_likers(self, object_uri: str) -> JSONElement:
         if obj := self._find_note_dict_by_uri(object_uri):
             obj_id = obj['id']
             response = self.http_get(f'/api/v1/statuses/{ obj_id }/favourited_by')
@@ -385,7 +388,7 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find object on { self }: "{ object_uri }"')
 
 
-    def object_announcers(self, object_uri: str) -> list[dict[str, Any]]:
+    def object_announcers(self, object_uri: str) -> JSONElement:
         if obj := self._find_note_dict_by_uri(object_uri):
             obj_id = obj['id']
             response = self.http_get(f'/api/v1/statuses/{ obj_id }/reblogged_by')
@@ -393,19 +396,20 @@ class AuthenticatedMastodonApiClient:
         raise ValueError(f'Cannot find object on { self }: "{ object_uri }"')
 
 
-    def account_dict(self) -> dict[str, Any]:
+    def account_dict(self) -> JSONObject:
         response = self.http_get('/api/v1/accounts/verify_credentials')
-        return response
+        return checked_cast(dict, response)
 
 
     def delete_all_followers(self) -> None:
         this_account_id = self._account.internal_userid
         while True:
             response = self.http_get(f'/api/v1/accounts/{ this_account_id }/followers')
-            if len(response) == 0:
+            followers = checked_cast(list, response)
+            if len(followers) == 0:
                 return
 
-            for follower_dict in response:
+            for follower_dict in followers:
                 follower_id = follower_dict['id']
                 self.http_post(f'/api/v1/accounts/{ follower_id }/unfollow')
 
@@ -414,10 +418,11 @@ class AuthenticatedMastodonApiClient:
         this_account_id = self._account.internal_userid
         while True:
             response = self.http_get(f'/api/v1/accounts/{ this_account_id }/following')
-            if len(response) == 0:
+            following = checked_cast(list, response)
+            if len(following) == 0:
                 return
 
-            for following_dict in response:
+            for following_dict in following:
                 following_id = following_dict['id']
                 self.http_post(f'/api/v1/accounts/{ following_id }/remove_from_followers')
 
@@ -425,10 +430,11 @@ class AuthenticatedMastodonApiClient:
     def delete_all_statuses(self) -> None:
         while True:
             response = self.http_get('/api/v1/statuses')
-            if len(response) == 0:
+            statuses = checked_cast(list, response)
+            if len(statuses) == 0:
                 return
 
-            for status_dict in response:
+            for status_dict in statuses:
                 status_id = status_dict['id']
                 self.http_post(f'/api/v1/statuses/{ status_id }')
 
@@ -448,12 +454,11 @@ class AuthenticatedMastodonApiClient:
             'type' : 'accounts'
         }
         results = self.http_get('/api/v2/search?' + urlencode(args))
+        accounts = checked_cast(list, checked_cast(dict, results))
 
         # Mastodon has the foo@bar.com in the 'acct' field
-        ret = find_first_in_array(results.get('accounts'), lambda b: b['acct'] == handle_without_at)
-        if isinstance(ret, dict):
-            return cast(dict[str,Any], ret)
-        raise ValueError(f'Unexpected type: { ret }')
+        ret = find_first_in_array(accounts, lambda b: b['acct'] == handle_without_at)
+        return checked_cast(dict, ret)
 
 
     def _find_note_dict_by_uri(self, uri: str) -> dict[str,Any] | None:
@@ -466,8 +471,9 @@ class AuthenticatedMastodonApiClient:
             'type' : 'statuses'
         }
         results = self.http_get('/api/v2/search?' + urlencode(args))
+        statuses = checked_cast(list, checked_cast(dict, results))
 
-        ret = find_first_in_array(results.get('statuses'), lambda b: b['uri'] == uri)
+        ret = find_first_in_array(statuses, lambda b: b['uri'] == uri)
         if ret is None:
             return None
         if isinstance(ret, dict):
@@ -476,20 +482,20 @@ class AuthenticatedMastodonApiClient:
 
 
 class AccountOnNodeWithMastodonAPI(FediverseAccount): # this is intended to be abstract
-    def __init__(self, role: str | None, userid: str):
+    def __init__(self, role: str | None, userid: str) -> None:
         super().__init__(role, userid)
-        self._account_dict : dict[str, Any] | None = None
+        self._account_dict : JSONObject | None = None
 
 
     @property
-    def account_dict(self) -> dict[str, Any]:
+    def account_dict(self) -> JSONObject:
         if self._account_dict is None:
-            self._account_dict = self.mastodon_client.account_dict()
+            self._account_dict = checked_cast(dict, self.mastodon_client.account_dict())
         return self._account_dict
 
     @property
     def internal_userid(self) -> int:
-        return self.account_dict['id']
+        return checked_cast(int, self.account_dict['id'])
 
 
     @property
@@ -500,7 +506,7 @@ class AccountOnNodeWithMastodonAPI(FediverseAccount): # this is intended to be a
 
 class MastodonAccount(AccountOnNodeWithMastodonAPI): # this is intended to be abstract
     @staticmethod
-    def create_from_account_info_in_testplan(account_info_in_testplan: dict[str, str | None], context_msg: str = ''):
+    def create_from_account_info_in_testplan(account_info_in_testplan: dict[str, str | None], context_msg: str = '') -> MastodonAccount:
         """
         Parses the information provided in an "account" dict of TestPlanConstellationNode
         """
@@ -525,7 +531,7 @@ class MastodonAccount(AccountOnNodeWithMastodonAPI): # this is intended to be ab
 
 
 class MastodonUserPasswordAccount(MastodonAccount):
-    def __init__(self, role: str | None, username: str, password: str, email: str):
+    def __init__(self, role: str | None, username: str, password: str, email: str) -> None:
         super().__init__(role, username)
         self._password = password
         self._email = email
@@ -550,7 +556,7 @@ class MastodonUserPasswordAccount(MastodonAccount):
                 'scope': 'read write follow push'
             }
             result = mastodon_api_invoke_post_or_put('POST', oauth_app.api_base_url, oauth_app.session, '/oauth/token', args=args)
-            token = result['access_token']
+            token = checked_cast(dict, result)['access_token']
             self._mastodon_client = AuthenticatedMastodonApiClient(oauth_app, self, token)
         return self._mastodon_client
 
@@ -559,7 +565,7 @@ class MastodonOAuthTokenAccount(MastodonAccount):
     """
     Compare with WordPressAccount.
     """
-    def __init__(self, role: str | None, userid: str, oauth_token: str):
+    def __init__(self, role: str | None, userid: str, oauth_token: str) -> None:
         super().__init__(role, userid)
         self._oauth_token = oauth_token
         self._mastodon_client: AuthenticatedMastodonApiClient | None = None # Allocated as needed
@@ -578,13 +584,13 @@ class MastodonOAuthTokenAccount(MastodonAccount):
 
 class NodeWithMastodonApiConfiguration(NodeConfiguration):
     def __init__(self,
-        node_driver: 'NodeDriver',
+        node_driver: NodeDriver,
         app: str,
         app_version: str | None = None,
         hostname: str | None = None,
         start_delay: float = 0.0,
         verify_tls_certificate: bool = True
-    ):
+    ) -> None:
         super().__init__(node_driver=node_driver, app=app, app_version=app_version, hostname=hostname, start_delay=start_delay)
         self._verify_tls_certificate = verify_tls_certificate
 
@@ -605,7 +611,7 @@ class NodeWithMastodonAPI(FediverseNode):
     (which lets us act as a single user) and there are no tests that require
     us to have multiple accounts that we can act as, on the same node.
     """
-    def __init__(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager, auto_accept_follow: bool = True):
+    def __init__(self, rolename: str, config: NodeConfiguration, account_manager: AccountManager, auto_accept_follow: bool = True) -> None:
         super().__init__(rolename, config, account_manager)
 
         self._mastodon_oauth_app : MastodonOAuthApp | None = None
@@ -674,7 +680,7 @@ class NodeWithMastodonAPI(FediverseNode):
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.make_create_note(content, deliver_to)
         self._run_poor_mans_cron()
-        return response['uri']
+        return checked_cast(dict, response)['uri']
 
 
     @override
@@ -696,7 +702,7 @@ class NodeWithMastodonAPI(FediverseNode):
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.make_reply_note(to_be_replied_to_object_uri, reply_content)
         self._run_poor_mans_cron()
-        return response['uri']
+        return checked_cast(dict, response)['uri']
 
 
     @override
@@ -732,7 +738,7 @@ class NodeWithMastodonAPI(FediverseNode):
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.actor_has_received_object(object_uri)
         if response:
-            return response['content']
+            return checked_cast(dict, response)['content']
         return None
 
 
@@ -741,7 +747,7 @@ class NodeWithMastodonAPI(FediverseNode):
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.note_dict(note_uri)
         if response:
-            return cast(str, response['content'])
+            return checked_cast(dict, response)['content']
         return None
 
 
@@ -749,14 +755,17 @@ class NodeWithMastodonAPI(FediverseNode):
     def object_author(self, actor_acct_uri: str, object_uri: str) -> str | None:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.note_dict(object_uri)
-        return cast(str, response['author']['acct'])
+        author = checked_cast(dict, response)['author']
+        acct = checked_cast(dict, author)['acct']
+        return checked_cast(str, acct)
 
 
     @override
     def direct_replies_to_object(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.object_context(object_uri)
-        ret = [ d['uri'] for d in response['descendants']]
+        descendants = checked_cast(list, checked_cast(dict, response)['descendants'])
+        ret = [ d['uri'] for d in descendants]
         return ret
 
 
@@ -764,7 +773,8 @@ class NodeWithMastodonAPI(FediverseNode):
     def object_likers(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.object_likers(object_uri)
-        ret = [ 'acct:' + x['acct'] for x in response ]
+        likers = checked_cast(list, response)
+        ret = [ 'acct:' + x['acct'] for x in likers ]
         return ret
 
 
@@ -772,7 +782,8 @@ class NodeWithMastodonAPI(FediverseNode):
     def object_announcers(self, actor_acct_uri: str, object_uri: str) -> list[str]:
         mastodon_client = self._get_mastodon_client_by_actor_acct_uri(actor_acct_uri)
         response = mastodon_client.object_announcers(object_uri)
-        ret = [ 'acct:' + x['acct'] for x in response ]
+        announcers = checked_cast(list, response)
+        ret = [ 'acct:' + x['acct'] for x in announcers ]
         return ret
 
 

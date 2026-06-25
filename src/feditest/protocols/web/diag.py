@@ -5,7 +5,8 @@ WebClient and WebServer, augmented with diagnostic functionality, that may be im
 from datetime import UTC, date, datetime
 from dataclasses import dataclass
 from multidict import MultiDict
-from typing import Any, Callable, List, final
+from typing import Any, cast, final
+from collections.abc import Callable
 
 from . import WebClient, WebServer
 from feditest.nodedrivers import NotImplementedByNodeError
@@ -36,11 +37,11 @@ class HttpResponse:
     when_completed: date | None = datetime.now(UTC)
 
 
-    def content_type(self):
+    def content_type(self) -> str | None:
         return self.response_headers.get('content-type')
 
 
-    def payload_charset(self):
+    def payload_charset(self) -> str | None:
         content_type = self.content_type()
         tag = 'charset='
         if content_type and content_type.find(tag) >= 0:
@@ -48,20 +49,20 @@ class HttpResponse:
         return None
 
 
-    def payload_as_string(self):
+    def payload_as_string(self) -> str | None:
         if not self.payload:
             return None
         content_type = self.content_type()
         if content_type and content_type.startswith('text/'):
-            return self.payload.decode(self.payload_charset())
+            return self.payload.decode(self.payload_charset() or 'utf-8')
         raise ValueError()
 
 
-    def location(self):
+    def location(self) -> str | None:
         return self.response_headers.get('location')
 
 
-    def is_redirect(self):
+    def is_redirect(self) -> bool:
         return self.http_status in [301, 302, 303, 307, 308]
 
 
@@ -76,21 +77,21 @@ class WebServerLog:
     """
     A list of logged HTTP requests to a web server.
     """
-    def __init__(self, time_started: date = datetime.now(UTC), entries: List[HttpRequestResponsePair] | None = None ):
-        self._time_started : date = time_started
-        self._web_log_entries : List[HttpRequestResponsePair] = entries or []
+    def __init__(self, time_started: date | None = None, entries: list[HttpRequestResponsePair] | None = None ) -> None:
+        self._time_started : date = time_started or datetime.now(UTC)
+        self._web_log_entries : list[HttpRequestResponsePair] = entries or []
 
 
     def append(self, to_add: HttpRequestResponsePair) -> None:
         self._web_log_entries.append(to_add)
 
 
-    def entries(self):
+    def entries(self) -> list[HttpRequestResponsePair]:
         return self._web_log_entries
 
 
-    def entries_since(self, cutoff: date) ->  'WebServerLog':
-        ret : List[HttpRequestResponsePair] = []
+    def entries_since(self, cutoff: date) ->  WebServerLog:
+        ret : list[HttpRequestResponsePair] = []
         for entry in self._web_log_entries:
             if entry.request.when_started >= cutoff :
                 ret.append(entry)
@@ -101,7 +102,7 @@ class WebDiagClient(WebClient):
     """
     Abstract class used for diagnostic Nodes that speak HTTP as client.
     """
-    def http(self, request: HttpRequest, follow_redirects: bool = True, verify=False) -> HttpRequestResponsePair:
+    def http(self, request: HttpRequest, follow_redirects: bool = True, verify: bool = False) -> HttpRequestResponsePair:
         """
         Make this WebClient perform an HTTP request.
         """
@@ -109,7 +110,7 @@ class WebDiagClient(WebClient):
         # Unlikely that there is a manual action the user could take, so no prompt here
 
 
-    def http_get(self, uri: str, follow_redirects: bool = True, verify=False) -> HttpRequestResponsePair:
+    def http_get(self, uri: str, follow_redirects: bool = True, verify: bool = False) -> HttpRequestResponsePair:
         """
         Convenience function that makes it easier to invoke making this WebClient perform an HTTP GET request.
         """
@@ -128,15 +129,15 @@ class WebDiagClient(WebClient):
         Can be thrown to indicate that the WebClient has lost patience with the redirects of the server
         it is talking to.
         """
-        def __init__(self, request: HttpRequest):
+        def __init__(self, request: HttpRequest) -> None:
             """
             request: the original request before the first redirect
             """
             self._request = request
 
 
-        def __str__(self):
-            f'Too many redirects: { self._request.uri.uri }'
+        def __str__(self) -> str:
+            return f'Too many redirects: { self._request.parsed_uri.uri }'
 
 
     class HttpUnsuccessfulError(RuntimeError):
@@ -144,28 +145,29 @@ class WebDiagClient(WebClient):
         Thrown to indicate an unsuccessful HTTP request because DNS could not be resolved, the request
         timed out etc.
         """
-        def __init__(self, request: HttpRequest):
+        def __init__(self, request: HttpRequest) -> None:
             """
             request: the request
             """
             self._request = request
 
 
-        def __str__(self):
-            f'Unsuccessful HTTP request: { self._request.uri.uri }'
+        def __str__(self) -> str:
+            return f'Unsuccessful HTTP request: { self._request.parsed_uri.uri }'
 
 
     class TlsError(RuntimeError):
         """
         Raised when the provided TLS certificate was invalid.
         """
-        def __init__(self, http_request_response_pair: HttpRequestResponsePair):
+        def __init__(self, http_request_response_pair: HttpRequestResponsePair) -> None:
             self._http_request_response_pair = http_request_response_pair
 
 
-        def __str__(self):
+        def __str__(self) -> str:
+            response = cast(HttpResponse, self._http_request_response_pair.response)
             return 'Invalid TLS certificate.' \
-                   + f'\n -> "{ self._http_request_response_pair.response.payload_as_string() }"'
+                   + f'\n -> "{ response.payload_as_string() }"'
 
 
 class WebDiagServer(WebServer):

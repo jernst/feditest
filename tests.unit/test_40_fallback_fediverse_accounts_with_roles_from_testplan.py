@@ -3,6 +3,7 @@ Test that Accounts and NonExistingAccounts are parsed correctly when given in a 
 specifies a FallbackFediverseNode. This is the test in which the Accounts have pre-assigned roles.
 """
 
+from collections.abc import Iterator
 from typing import cast
 
 import pytest
@@ -24,7 +25,7 @@ NODE1_ROLE = 'node1-role'
 
 
 @pytest.fixture(autouse=True)
-def set_global_variable():
+def set_global_variable() -> Iterator[None]:
     # before test
     feditest.DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = True
 
@@ -36,7 +37,7 @@ def set_global_variable():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init():
+def init() -> None:
     """ Clean init """
     feditest.all_tests = {}
     feditest._registered_as_test = {}

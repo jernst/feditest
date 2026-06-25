@@ -38,7 +38,7 @@ class AbortTestException(TestRunControlException):
 
 
 class TestRunController(ABC):
-    def __init__(self, run: 'feditest.testrun.TestRun' ):
+    def __init__(self, run: feditest.testrun.TestRun) -> None:
         self.run = run
 
 
@@ -186,7 +186,7 @@ class InteractiveTestRunController(TestRunController):
 
 
 class InteractiveOnErrorTestRunController(TestRunController):
-    def __init__(self, run: 'feditest.testrun.TestRun' ):
+    def __init__(self, run: feditest.testrun.TestRun) -> None:
         super().__init__(run)
 
         self.delegate : TestRunController = AutomaticTestRunController(run)
@@ -215,4 +215,3 @@ class InteractiveOnErrorTestRunController(TestRunController):
         if not last_test_step_success:
             self.turn_interactive()
         return self.delegate.determine_next_test_step_index(last_test_step_success, last_test_step_index)
-

@@ -5,7 +5,8 @@ Classes that represent a TestPlan and its parts.
 from abc import ABC
 from dataclasses import dataclass
 import json
-from typing import Any, Callable, Final
+from typing import Any, Final
+from collections.abc import Callable
 
 import msgspec
 
@@ -17,7 +18,7 @@ class InvalidAccountSpecificationException(Exception):
     Thrown if an account specification given in a TestPlan does not have sufficient information
     to be used as an Account for a Node instantiated by this NodeDriver.
     """
-    def __init__(self, account_info_from_testplan: dict[str, str | None], msg: str, context_msg: str = ''):
+    def __init__(self, account_info_from_testplan: dict[str, str | None], msg: str, context_msg: str = '') -> None:
         super().__init__(f'{ context_msg }Invalid account specification: { msg }')
 
 
@@ -26,7 +27,7 @@ class InvalidNonExistingAccountSpecificationException(Exception):
     Thrown if a non-existing account specification given in a TestPlan does not have sufficient information
     to be used as an NonExistingAccount for a Node instantiated by this NodeDriver.
     """
-    def __init__(self, non_existing_account_info_from_testplan: dict[str, str | None], msg: str, context_msg: str = ''):
+    def __init__(self, non_existing_account_info_from_testplan: dict[str, str | None], msg: str, context_msg: str = '') -> None:
         super().__init__(f'{ context_msg }Invalid non-existing account specification: { msg }')
 
 
@@ -95,7 +96,7 @@ class TestPlanError(RuntimeError):
     """
     This exception is raised when a TestPlan is defined incorrectly or incompletely.
     """
-    def __init__(self, details: str):
+    def __init__(self, details: str) -> None:
         super().__init__(f"TestPlan defined insufficiently: {details}" )
 
 
@@ -103,7 +104,7 @@ class TestPlanNodeParameterRequiredError(TestPlanError):
     """
     A required parameter was missing.
     """
-    def __init__(self, par: TestPlanNodeParameter, more_details : str = ''):
+    def __init__(self, par: TestPlanNodeParameter, more_details : str = '') -> None:
         super().__init__(f'Required parameter missing: "{ par.name }"{ more_details}.')
 
 
@@ -111,7 +112,7 @@ class TestPlanNodeParameterMalformedError(TestPlanError):
     """
     A required parameter was given but malformed.
     """
-    def __init__(self, par: TestPlanNodeParameter, more_details : str = ''):
+    def __init__(self, par: TestPlanNodeParameter, more_details : str = '') -> None:
         super().__init__(f'Required parameter malformed: "{ par.name }"{ more_details}.')
 
 
@@ -176,17 +177,17 @@ class TestPlanConstellationNode(msgspec.Struct):
 
 
     @staticmethod
-    def load(filename: str) -> 'TestPlanConstellationNode':
+    def load(filename: str) -> TestPlanConstellationNode:
         """
         Read a file, and instantiate a TestPlanConstellationNode from what we find.
         """
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             testplanconstellationnode_json = json.load(f)
 
         return msgspec.convert(testplanconstellationnode_json, type=TestPlanConstellationNode)
 
 
-    def parameter(self, par: TestPlanNodeParameter, defaults: dict[str, str | None] | None = None) -> Any | None:
+    def parameter(self, par: TestPlanNodeParameter, defaults: dict[str, str | None] | None = None) -> Any: # noqa: ANN401
         ret = None
         if self.parameters:
             ret = self.parameters.get(par.name)
@@ -201,7 +202,7 @@ class TestPlanConstellationNode(msgspec.Struct):
         return None
 
 
-    def parameter_or_raise(self, par: TestPlanNodeParameter, defaults: dict[str, str | None] | None = None) -> Any:
+    def parameter_or_raise(self, par: TestPlanNodeParameter, defaults: dict[str, str | None] | None = None) -> Any: # noqa: ANN401
         ret = self.parameter(par, defaults)
         if ret is None:
             raise TestPlanNodeParameterRequiredError(par)
@@ -285,24 +286,24 @@ class TestPlanConstellation(msgspec.Struct):
 
 
     @staticmethod
-    def load(filename: str) -> 'TestPlanConstellation':
+    def load(filename: str) -> TestPlanConstellation:
         """
         Read a file, and instantiate a TestPlanConstellation from what we find.
         """
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             testplanconstellation_json = json.load(f)
 
         return msgspec.convert(testplanconstellation_json, type=TestPlanConstellation)
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.name:
             return self.name
         # construct something that makes sense to the user
         return ", ".join( [ f'{ role }: { node.nodedriver if node else "" }' for role, node in self.roles.items() ] )
 
 
-    def is_template(self):
+    def is_template(self) -> bool:
         """
         Returns true if the roles in the constellation have not all been bound to NodeDrivers.
         """
@@ -320,7 +321,7 @@ class TestPlanConstellation(msgspec.Struct):
             node.check_can_be_executed(role_context_msg)
 
 
-    def check_defines_all_role_names(self, want_role_names: set[str], context_msg: str = ""):
+    def check_defines_all_role_names(self, want_role_names: set[str], context_msg: str = "") -> None:
         for want_role_name in want_role_names:
             if want_role_name not in self.roles:
                 raise TestPlanError(context_msg + f'Constellation does not define role "{ want_role_name }".')
@@ -362,11 +363,11 @@ class TestPlanTestSpec(msgspec.Struct):
                     raise ValueError(f'Invalid TestPlanTestSpec role mapping value: { role_mapping_value }')
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
-    def get_test(self, context_msg : str = "" ) -> 'feditest.Test':
+    def get_test(self, context_msg : str = "" ) -> feditest.Test:
         ret = feditest.all_tests.get(self.name)
         if ret is None:
             raise TestPlanError(context_msg + f'Cannot find test "{ self.name }".')
@@ -433,17 +434,17 @@ class TestPlanSessionTemplate(msgspec.Struct):
 
 
     @staticmethod
-    def load(filename: str) -> 'TestPlanSessionTemplate':
+    def load(filename: str) -> TestPlanSessionTemplate:
         """
         Read a file, and instantiate a TestPlanSession from what we find.
         """
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             testplansession_json = json.load(f)
 
         return msgspec.convert(testplansession_json, type=TestPlanSessionTemplate)
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name if self.name else 'Unnamed'
 
 
@@ -523,25 +524,25 @@ class TestPlan(msgspec.Struct):
 
 
     @staticmethod
-    def load(filename: str) -> 'TestPlan':
+    def load(filename: str) -> TestPlan:
         """
         Read a file, and instantiate a TestPlan from what we find.
         """
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             testplan_json = json.load(f)
 
         return msgspec.convert(testplan_json, type=TestPlan)
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name if self.name else 'Unnamed'
 
 
-    def is_compatible_type(self):
+    def is_compatible_type(self) -> bool:
         return self.type is None or self.type == 'feditest-testplan'
 
 
-    def has_compatible_version(self):
+    def has_compatible_version(self) -> bool:
         if not self.feditest_version:
             return True
         return self.feditest_version == FEDITEST_VERSION

@@ -11,7 +11,7 @@ from feditest.testplan import TestPlan, TestPlanConstellation, TestPlanSessionTe
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init():
+def init() -> None:
     """ Keep these isolated to this module """
     feditest.all_tests = {}
     feditest._registered_as_test = {}

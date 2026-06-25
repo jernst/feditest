@@ -18,7 +18,7 @@ class Test(ABC):
         self._builtin: bool = builtin
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -37,7 +37,7 @@ class Test(ABC):
 
 
     @property
-    def builtin(self):
+    def builtin(self) -> bool:
         """
         If true, do not add this test to a test session when the session is created by collecting tests.
         """
@@ -77,14 +77,14 @@ class TestStepInTestClass:
     A step in a TestFromTestClass. TestSteps for the same Test are all declared with @step in the same class,
     and will be executed in sequence unless specified otherwise.
     """
-    def __init__(self, name: str, description: str | None, test: 'TestFromTestClass', test_step_function: Callable[[Any],None]) -> None:
+    def __init__(self, name: str, description: str | None, test: TestFromTestClass, test_step_function: Callable[[Any],None]) -> None:
         self.name: str = name
         self.description: str | None = description
         self.test = test
         self.test_step_function: Callable[[Any], None] = test_step_function
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 

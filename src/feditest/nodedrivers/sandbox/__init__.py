@@ -1,7 +1,7 @@
 """
 """
 
-from typing import List, override
+from typing import override
 
 from feditest import nodedriver
 from feditest.nodedrivers import AccountManager, NodeConfiguration, NodeDriver, HOSTNAME_PAR
@@ -54,9 +54,9 @@ class SandboxMultServer_Implementation1(SandboxMultServer):
     First server implementation in the Sandbox protocol with some test instrumentation.
     This server implementation simply calculates a*b.
     """
-    def __init__(self, rolename: str, config: NodeConfiguration):
+    def __init__(self, rolename: str, config: NodeConfiguration) -> None:
         super().__init__(rolename, config) # Has no AccountManager
-        self._log : List[SandboxLogEvent] | None = None
+        self._log : list[SandboxLogEvent] | None = None
 
 
     def mult(self, a: float, b: float) -> float:
@@ -71,7 +71,7 @@ class SandboxMultServer_Implementation1(SandboxMultServer):
         self._log = []
 
 
-    def get_and_clear_log(self) -> List[SandboxLogEvent] | None:
+    def get_and_clear_log(self) -> list[SandboxLogEvent] | None:
         ret = self._log
         self._log = None
         return ret
@@ -112,9 +112,9 @@ class SandboxMultServer_Implementation2Faulty(SandboxMultServer):
     Second server implementation in the Sandbox protocol with some test instrumentation.
     This server calculates a*b through a for loop using integers rather than floats
     """
-    def __init__(self, rolename: str, config: NodeConfiguration):
+    def __init__(self, rolename: str, config: NodeConfiguration) -> None:
         super().__init__(rolename, config) # Has no AccountManager
-        self._log : List[SandboxLogEvent] | None = None
+        self._log : list[SandboxLogEvent] | None = None
 
 
     def mult(self, a: float, b: float) -> float:
@@ -128,11 +128,11 @@ class SandboxMultServer_Implementation2Faulty(SandboxMultServer):
         return c
 
 
-    def start_logging(self):
+    def start_logging(self) -> None:
         self._log = []
 
 
-    def get_and_clear_log(self):
+    def get_and_clear_log(self) -> list[SandboxLogEvent] | None:
         ret = self._log
         self._log = None
         return ret

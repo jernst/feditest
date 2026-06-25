@@ -8,11 +8,12 @@ import feditest
 from feditest import assert_that, step, test, InteropLevel, SpecLevel
 from feditest.testplan import TestPlan, TestPlanConstellation, TestPlanSessionTemplate, TestPlanTestSpec
 from feditest.testrun import TestRun
+from feditest.testruntranscript import TestRunTestStepTranscript
 from feditest.testruncontroller import AutomaticTestRunController
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_node_drivers():
+def init_node_drivers() -> None:
     """
     Cleanly define the NodeDrivers.
     """
@@ -21,7 +22,7 @@ def init_node_drivers():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_tests():
+def init_tests() -> None:
     """
     Cleanly define some tests.
     """
@@ -39,7 +40,7 @@ def init_tests():
         """
         A multi-step test class that raises various failures in different steps.
         """
-        def __init__(self):
+        def __init__(self) -> None:
             pass
 
 
@@ -185,7 +186,7 @@ def test_plan_fixture() -> TestPlan:
     return ret
 
 
-def test_run_testplan(test_plan_fixture: TestPlan):
+def test_run_testplan(test_plan_fixture: TestPlan) -> None:
     test_plan_fixture.check_can_be_executed()
 
     test_run = TestRun(test_plan_fixture)
@@ -203,8 +204,41 @@ def test_run_testplan(test_plan_fixture: TestPlan):
 
     assert len(transcript.sessions) == 1
     assert len(transcript.sessions[0].run_tests) == 1
-    assert len(transcript.sessions[0].run_tests[0].run_steps) == 1 # It never getst to the other steps
+    assert len(transcript.sessions[0].run_tests[0].run_steps) == 24 # It never gets to the other steps
 
-    assert transcript.sessions[0].run_tests[0].run_steps[0].result.type == 'AssertionFailure'
-    assert transcript.sessions[0].run_tests[0].run_steps[0].result.spec_level == SpecLevel.MUST.name
-    assert transcript.sessions[0].run_tests[0].run_steps[0].result.interop_level == InteropLevel.UNKNOWN.name
+    run_steps : list[TestRunTestStepTranscript] = transcript.sessions[0].run_tests[0].run_steps
+
+    assert run_steps[0].result.type == 'AssertionFailure'
+    assert run_steps[0].result.spec_level == SpecLevel.MUST.name
+    assert run_steps[0].result.interop_level == InteropLevel.UNKNOWN.name
+
+    assert run_steps[1].result.type == 'AssertionFailure'
+    assert run_steps[1].result.spec_level == SpecLevel.MUST.name
+    assert run_steps[1].result.interop_level == InteropLevel.UNKNOWN.name
+
+    assert run_steps[2].result.type == 'AssertionFailure'
+    assert run_steps[2].result.spec_level == SpecLevel.SHOULD.name
+    assert run_steps[2].result.interop_level == InteropLevel.UNKNOWN.name
+
+    assert run_steps[3].result.type == 'AssertionFailure'
+    assert run_steps[3].result.spec_level == SpecLevel.IMPLIED.name
+    assert run_steps[3].result.interop_level == InteropLevel.UNKNOWN.name
+
+
+    assert run_steps[4].result.type == 'AssertionFailure'
+    assert run_steps[4].result.spec_level == SpecLevel.MUST.name
+    assert run_steps[4].result.interop_level == InteropLevel.PROBLEM.name
+
+    assert run_steps[5].result.type == 'AssertionFailure'
+    assert run_steps[5].result.spec_level == SpecLevel.MUST.name
+    assert run_steps[5].result.interop_level == InteropLevel.DEGRADED.name
+
+    assert run_steps[6].result.type == 'AssertionFailure'
+    assert run_steps[6].result.spec_level == SpecLevel.MUST.name
+    assert run_steps[6].result.interop_level == InteropLevel.UNAFFECTED.name
+
+    assert run_steps[7].result.type == 'AssertionFailure'
+    assert run_steps[7].result.spec_level == SpecLevel.MUST.name
+    assert run_steps[7].result.interop_level == InteropLevel.UNKNOWN.name
+
+    # The rest is left as an exercise for the reader

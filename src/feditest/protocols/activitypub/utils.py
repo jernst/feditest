@@ -15,7 +15,7 @@ class MemberOfCollectionMatcher(BaseMatcher[Any]):
     """
     Custom matcher: decide whether a URI is a member of Collection identified by another URI
     """
-    def __init__(self, collection_uri: str, node: Node):
+    def __init__(self, collection_uri: str, node: Node) -> None:
         """
         collection_uri: the URI identifying the collection which to examine
         """

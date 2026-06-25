@@ -20,7 +20,7 @@ class AbstractWebFingerDiagClient(WebFingerDiagClient):
         server: WebFingerServer | None = None
     ) -> WebFingerQueryDiagResponse:
 
-        query_url = construct_webfinger_uri_for(resource_uri, rels, server.hostname() if server else None )
+        query_url = construct_webfinger_uri_for(resource_uri, rels, server.hostname if server else None )
         parsed_uri = ParsedUri.parse(query_url)
         if not parsed_uri:
             raise ValueError('Not a valid URI:', query_url) # can't avoid this
@@ -33,10 +33,13 @@ class AbstractWebFingerDiagClient(WebFingerDiagClient):
             if pair.response and pair.response.is_redirect():
                 if redirect_count <= 0:
                     return WebFingerQueryDiagResponse(pair, None, [ WebDiagClient.TooManyRedirectsError(current_request) ])
-                parsed_location_uri = ParsedUri.parse(pair.response.location())
-                if not parsed_location_uri:
-                    return WebFingerQueryDiagResponse(pair, None, [ ValueError('Location header is not a valid URI:', query_url, '(from', resource_uri, ')') ] )
-                current_request = HttpRequest(parsed_location_uri)
+                location = pair.response.location()
+                if location:
+                    parsed_location_uri = ParsedUri.parse(location)
+                    if parsed_location_uri:
+                        current_request = HttpRequest(parsed_location_uri)
+                        break
+                return WebFingerQueryDiagResponse(pair, None, [ ValueError('Location header is not a valid URI:', query_url, '(from', resource_uri, ')') ] )
             break
 
         # I guess we always have a non-null responses here, but mypy complains without the cast

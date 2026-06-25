@@ -62,7 +62,6 @@ exclude = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/feditest"]
 
-
 # [tool.hatch.metadata.hooks.custom]
 # Empty: https://hatch.pypa.io/dev/how-to/config/dynamic-metadata/
 
@@ -75,4 +74,32 @@ pythonpath = ["src"]
 testpaths = [ "tests.unit" ]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+  "ANN", # missing type annotations
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "B",   # bugbear
+  "UP",  # pyupgrade
+]
+
+# To avoid duplication with pyright:
+# Do NOT include "ANN"
+# Do NOT include "FA", "TCH" unless you explicitly want overlap
+
+ignore = [
+  "E501",  # line length (often redundant if using formatter)
+]
+
+[tool.pyright]
+typeCheckingMode = "strict"
+
+# Reduce overlap noise from Ruff-like concerns
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+# Avoid duplication with Ruff formatting/linting
+reportUnusedImport = false
+reportUnusedVariable = false  # Ruff already handles F401/F841 well

@@ -13,7 +13,7 @@ from feditest.protocols.fediverse import ROLE_ACCOUNT_FIELD, USERID_ACCOUNT_FIEL
 
 from feditest.reporting import trace
 from feditest.testplan import TestPlanNodeAccountField, TestPlanNodeParameter
-from feditest.utils import boolean_parse_validate, prompt_user_parse_validate
+from feditest.utils import boolean_parse_validate, checked_cast, prompt_user_parse_validate
 
 
 VERIFY_API_TLS_CERTIFICATE_PAR = TestPlanNodeParameter(
@@ -42,7 +42,7 @@ class WordPressAccount(AccountOnNodeWithMastodonAPI):
     """
     Compare with MastodonOAuthTokenAccount.
     """
-    def __init__(self, role: str | None, userid: str, oauth_token: str | None, internal_userid: int = -1):
+    def __init__(self, role: str | None, userid: str, oauth_token: str | None, internal_userid: int = -1) -> None:
         """
         internal_userid: the number needed to identify the account for oauth token provisioning. There may be better ways
                          of doing this
@@ -55,7 +55,7 @@ class WordPressAccount(AccountOnNodeWithMastodonAPI):
 
 
     @staticmethod
-    def create_from_account_info_in_testplan(account_info_in_testplan: dict[str, str | None], context_msg: str = ''):
+    def create_from_account_info_in_testplan(account_info_in_testplan: dict[str, str | None], context_msg: str = '') -> WordPressAccount:
         """
         Parses the information provided in an "account" dict of TestPlanConstellationNode
         """
@@ -81,7 +81,7 @@ class WordPressAccount(AccountOnNodeWithMastodonAPI):
     def internal_userid(self) -> int:
         if self._internal_userid >= 0:
             return self._internal_userid
-        return self.account_dict['id']
+        return checked_cast(int, self.account_dict['id'])
 
 
     def oauth_token(self, oauth_client_id: str) -> str:

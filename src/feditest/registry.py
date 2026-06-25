@@ -52,12 +52,12 @@ class Registry(msgspec.Struct):
 
 
     @staticmethod
-    def load(filename: str) -> 'Registry':
+    def load(filename: str) -> Registry:
         """
         Read a file, and instantiate a Registry from what we find.
         """
         trace(f'Registry.load({ filename })')
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             registry_json = json.load(f)
 
         ret = msgspec.convert(registry_json, type=Registry)
@@ -65,7 +65,7 @@ class Registry(msgspec.Struct):
 
 
     @staticmethod
-    def create(rootdomain: str | None = None) -> 'Registry':
+    def create(rootdomain: str | None = None) -> Registry:
         trace(f'Registry.create({ rootdomain or "None" })')
         if not rootdomain:
             rootdomain = f'{ random.randint(10000, 99999) }.lan'
@@ -74,11 +74,11 @@ class Registry(msgspec.Struct):
         return ret
 
 
-    def is_compatible_type(self):
+    def is_compatible_type(self) -> bool:
         return self.type is None or self.type == 'feditest-registry'
 
 
-    def has_compatible_version(self):
+    def has_compatible_version(self) -> bool:
         if not self.feditest_version:
             return True
         return self.feditest_version == FEDITEST_VERSION
@@ -95,7 +95,7 @@ class Registry(msgspec.Struct):
             f.write(self.as_json())
 
 
-    def root_cert_for_trust_root(self):
+    def root_cert_for_trust_root(self) -> str | None:
         if self.ca:
             return self.ca.cert
         return None
@@ -291,14 +291,14 @@ By default, we use a random domain.
 """
 
 
-def registry_singleton():
+def registry_singleton() -> Registry:
     """
     This needs to be a function, otherwise different modules may end up with old values.
     """
     return _singleton
 
 
-def set_registry_singleton(new_singleton: Registry):
+def set_registry_singleton(new_singleton: Registry) -> Registry:
     global _singleton
     ret = _singleton
     _singleton = new_singleton

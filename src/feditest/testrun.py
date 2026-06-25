@@ -7,7 +7,7 @@ import platform
 import time
 import traceback
 from abc import ABC
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import cast
 
 import feditest.testruncontroller
@@ -59,7 +59,7 @@ class TestRunConstellation:
     """
     The instance of a TestPlanConstellation associated with a particular test run.
     """
-    def __init__(self, plan_constellation: TestPlanConstellation):
+    def __init__(self, plan_constellation: TestPlanConstellation) -> None:
         self._plan_constellation = plan_constellation
         self._nodes : dict[str, Node] = {}
         self._appdata : dict[str, dict[str, str | None]] = {} # Record what apps and versions are running here. Preserved beyond teardown.
@@ -153,7 +153,7 @@ class TestRunConstellation:
         return self._nodes.get(role_name)
 
 
-class HasStartEndResults(ABC):
+class HasStartEndResults(ABC): # noqa: B024 - intentional ABC without abstract methods
     def __init__(self) -> None:
         self.started : datetime | None = None
         self.ended : datetime | None = None
@@ -161,7 +161,7 @@ class HasStartEndResults(ABC):
 
 
 class TestRunTest(HasStartEndResults):
-    def __init__(self, run_session: 'TestRunSession', run_constellation: TestRunConstellation, plan_test_index: int):
+    def __init__(self, run_session: TestRunSession, run_constellation: TestRunConstellation, plan_test_index: int) -> None:
         super().__init__()
         self.run_session = run_session
         self.run_constellation = run_constellation
@@ -181,16 +181,16 @@ class TestRunTest(HasStartEndResults):
 
 
 class TestRunFunction(TestRunTest):
-    def __init__(self, run_session: 'TestRunSession', run_constellation: TestRunConstellation, test_from_test_function: feditest.TestFromTestFunction, plan_test_index: int):
+    def __init__(self, run_session: TestRunSession, run_constellation: TestRunConstellation, test_from_test_function: feditest.TestFromTestFunction, plan_test_index: int) -> None:
         super().__init__(run_session, run_constellation, plan_test_index)
         self.test_from_test_function = test_from_test_function
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.test_from_test_function)
 
 
-    def str_in_session(self):
+    def str_in_session(self) -> str:
         return f'{ self.test_from_test_function } in { self.run_session }'
 
 
@@ -219,18 +219,18 @@ class TestRunFunction(TestRunTest):
 
 
 class TestRunStepInClass(HasStartEndResults):
-    def __init__(self, run_test: 'TestRunClass', test_step: feditest.TestStepInTestClass, plan_step_index: int):
+    def __init__(self, run_test: TestRunClass, test_step: feditest.TestStepInTestClass, plan_step_index: int) -> None:
         super().__init__()
         self.run_test = run_test
         self.test_step = test_step
         self.plan_step_index = plan_step_index
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.test_step)
 
 
-    def str_in_session(self):
+    def str_in_session(self) -> str:
         return f'{ self.test_step } in { self.run_test.run_session }'
 
 
@@ -252,17 +252,17 @@ class TestRunStepInClass(HasStartEndResults):
 
 
 class TestRunClass(TestRunTest):
-    def __init__(self, run_session: 'TestRunSession', run_constellation: TestRunConstellation, test_from_test_class: feditest.TestFromTestClass, plan_test_index: int):
+    def __init__(self, run_session: TestRunSession, run_constellation: TestRunConstellation, test_from_test_class: feditest.TestFromTestClass, plan_test_index: int) -> None:
         super().__init__(run_session, run_constellation, plan_test_index)
         self.run_steps : list[TestRunStepInClass] = []
         self.test_from_test_class = test_from_test_class
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.test_from_test_class)
 
 
-    def str_in_session(self):
+    def str_in_session(self) -> str:
         return f'{ self.test_from_test_class } in { self.run_session }'
 
 
@@ -310,7 +310,7 @@ class TestRunClass(TestRunTest):
 
 
 class TestRunSession(HasStartEndResults):
-    def __init__(self, the_run: 'TestRun', plan_constellation_index: int):
+    def __init__(self, the_run: TestRun, plan_constellation_index: int) -> None:
         super().__init__()
         self.the_run = the_run
         self.plan_constellation_index = plan_constellation_index
@@ -323,7 +323,7 @@ class TestRunSession(HasStartEndResults):
         return self.the_run.plan.session_template
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{ self.plan_session }'
 
 
@@ -402,10 +402,10 @@ class TestRun(HasStartEndResults):
     """
     Encapsulates the state of a test run while feditest is executing a TestPlan
     """
-    def __init__(self, plan: TestPlan, record_who: bool = False):
+    def __init__(self, plan: TestPlan, record_who: bool = False) -> None:
         super().__init__()
         self.plan = plan
-        self.id : str = 'feditest-run-' + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        self.id : str = 'feditest-run-' + datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
         self.platform : str = platform.platform()
         self.run_sessions : list[TestRunSession] = []
         self.username : str | None = None
@@ -415,7 +415,7 @@ class TestRun(HasStartEndResults):
             self.hostname = platform.node()
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.plan.name:
             return f'{ self.id } ({ self.plan.name })'
         return self.id

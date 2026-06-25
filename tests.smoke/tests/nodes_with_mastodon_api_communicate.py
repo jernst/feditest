@@ -25,7 +25,7 @@ class FollowTest:
 
 
     @step
-    def provision_actors(self):
+    def provision_actors(self) -> None:
         self.leader_actor_acct_uri = self.leader_node.obtain_actor_acct_uri()
         assert self.leader_actor_acct_uri
         self.leader_node.set_auto_accept_follow(self.leader_actor_acct_uri, True)
@@ -40,12 +40,12 @@ class FollowTest:
 
 
     @step
-    def follow(self):
+    def follow(self) -> None:
         self.follower_node.make_follow(self.follower_actor_acct_uri, self.leader_actor_acct_uri)
 
 
     @step
-    def wait_until_actor_is_followed_by_actor(self):
+    def wait_until_actor_is_followed_by_actor(self) -> None:
         time.sleep(1) # Sometimes there seems to be a race condition in Mastodon, or something like that.
                       # If we proceed too quickly, the API returns 422 "User already exists" or such
                       # in response to a search, which makes no sense.
@@ -53,27 +53,27 @@ class FollowTest:
 
 
     @step
-    def wait_until_actor_is_following_actor(self):
+    def wait_until_actor_is_following_actor(self) -> None:
         poll_until(lambda: self.follower_node.actor_is_following_actor(self.follower_actor_acct_uri, self.leader_actor_acct_uri))
 
 
     @step
-    def leader_creates_note(self):
+    def leader_creates_note(self) -> None:
         self.leader_note_uri = self.leader_node.make_create_note(self.leader_actor_acct_uri, f"testing leader_creates_note {datetime.now()}")
         assert self.leader_note_uri
 
 
     @step
-    def wait_until_note_received(self):
+    def wait_until_note_received(self) -> None:
         poll_until(lambda: self.follower_node.actor_has_received_object(self.follower_actor_acct_uri, self.leader_note_uri))
 
 
     # @step
-    # def end_reset_all(self):
+    # def end_reset_all(self) -> None:
     #     self._reset_all()
 
 
-    def _reset_all(self):
+    def _reset_all(self) -> None:
         """
         Clean up data. This is here so the test is usable with non-brand-new instances.
         """

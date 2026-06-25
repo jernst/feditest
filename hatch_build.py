@@ -1,16 +1,17 @@
 #
 # Set a dynamic version number, see https://hatch.pypa.io/dev/how-to/config/dynamic-metadata/
-# At release time, override with env var: FEDITEST_RELEASE_VERSION=y 
+# At release time, override with env var: FEDITEST_RELEASE_VERSION=y
 #
 
 from datetime import datetime
 import os
+from typing import Any
 
 from hatchling.metadata.plugin.interface import MetadataHookInterface
 
 
 class JSONMetaDataHook(MetadataHookInterface):
-    def update(self, metadata):
+    def update(self, metadata: dict[str, Any]) -> None:
         if 'FEDITEST_RELEASE_VERSION' in os.environ and os.environ['FEDITEST_RELEASE_VERSION'].lower() == 'y':
             metadata['version'] = metadata['base_version']
         else:

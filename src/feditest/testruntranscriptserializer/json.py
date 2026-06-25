@@ -8,5 +8,5 @@ class JsonTestRunTranscriptSerializer(FileOrStdoutTestRunTranscriptSerializer):
     """
     An object that knows how to serialize a TestRun into JSON format
     """
-    def _write(self, transcript: TestRunTranscript, fd: IO[str]):
+    def _write(self, transcript: TestRunTranscript, fd: IO[str]) -> None:
         transcript.write(fd)

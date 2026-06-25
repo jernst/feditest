@@ -3,10 +3,10 @@
 
 import json
 from dataclasses import dataclass, field
-from typing import Any, override
+from typing import Any, cast, override
 
 from feditest.nodedrivers import NotImplementedByNodeError
-from feditest.protocols.web.diag import HttpRequestResponsePair, WebDiagClient
+from feditest.protocols.web.diag import HttpRequestResponsePair, HttpResponse, WebDiagClient
 from . import WebFingerClient, WebFingerServer
 
 from feditest.utils import (
@@ -21,7 +21,7 @@ class ClaimedJrd:
     The JSON structure that claims to be a JRD. This can contain any JSON because it needs to hold whatever
     claims to be a JRD, even if it is invalid. It won't try to hold data that isn't valid JSON.
     """
-    def __init__(self, json_string: str):
+    def __init__(self, json_string: str) -> None:
         if json_string is None or not isinstance(json_string, (str, bytes)):
             raise RuntimeError(f"Invalid payload type: {type(json_string)}")
         self._json = json.loads(json_string)
@@ -31,12 +31,12 @@ class ClaimedJrd:
         """
         Represents a problem during JRD parsing, such as syntax error.
         """
-        def __init__(self, jrd: 'ClaimedJrd', msg: str):
+        def __init__(self, jrd: ClaimedJrd, msg: str) -> None:
             self._jrd = jrd
             self._msg = msg
 
 
-        def __str__(self):
+        def __str__(self) -> str:
             return self._msg or self.__class__.__name__
 
 
@@ -105,12 +105,12 @@ class ClaimedJrd:
         return self._json['links']
 
 
-    def as_json_string(self) -> Any:
+    def as_json_string(self) -> Any: # noqa: ANN401 Any is fine
         return json.dumps(self._json)
 
 
     @staticmethod
-    def create_and_validate(value: str) -> 'ClaimedJrd':
+    def create_and_validate(value: str) -> ClaimedJrd:
         ret = ClaimedJrd(value) # may raise JSONDecodeError
         ret.validate()          # may raise any of the errors defined here
         return ret
@@ -377,7 +377,7 @@ working-copy-of"""
                 raise ExceptionGroup('JRD has multiple errors', excs)
 
 
-    def is_valid_link_subset(self, jrd_with_superset : 'ClaimedJrd', rels: list[str] | None = None) -> bool:
+    def is_valid_link_subset(self, jrd_with_superset : ClaimedJrd, rels: list[str] | None = None) -> bool:
         """
         Returns true if this and the provided ClaimedJrd are identical, except that the provided jrd_with_superset
         may contain additional 'link' entries as long as they don't have a 'rel' value in set rels.
@@ -463,7 +463,7 @@ working-copy-of"""
         return True
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         For error messages.
         """
@@ -521,26 +521,28 @@ class WebFingerDiagClient(WebFingerClient, WebDiagClient):
         """
         Raised when an HTTP status was obtained that was wrong for the situation.
         """
-        def __init__(self, http_request_response_pair: HttpRequestResponsePair):
+        def __init__(self, http_request_response_pair: HttpRequestResponsePair) -> None:
             self._http_request_response_pair = http_request_response_pair
 
 
-        def __str__(self):
+        def __str__(self) -> str:
+            response = cast(HttpResponse, self._http_request_response_pair.response)
             return 'Wrong HTTP status code.' \
-                   + f'\n -> { self._http_request_response_pair.response.http_status }'
+                   + f'\n -> { response.http_status }'
 
 
     class WrongContentTypeError(RuntimeError):
         """
         Raised when payload of a content type was received that was wrong for the situation
         """
-        def __init__(self, http_request_response_pair: HttpRequestResponsePair):
+        def __init__(self, http_request_response_pair: HttpRequestResponsePair) -> None:
             self._http_request_response_pair = http_request_response_pair
 
 
-        def __str__(self):
+        def __str__(self) -> str:
+            response = cast(HttpResponse, self._http_request_response_pair.response)
             return 'Wrong HTTP content type.' \
-                   + f'\n -> "{ self._http_request_response_pair.response.content_type() }"'
+                   + f'\n -> "{ response.content_type() }"'
 
 
 class WebFingerDiagServer(WebFingerServer):

@@ -6,6 +6,8 @@ import logging
 import logging.config
 import sys
 import traceback
+from typing import Any
+
 
 logging.config.dictConfig({
     'version'                  : 1,
@@ -34,13 +36,15 @@ logging.config.dictConfig({
 })
 LOG = logging.getLogger( 'feditest' )
 
-def set_reporting_level(n_verbose_flags: int) :
+
+def set_reporting_level(n_verbose_flags: int) -> None:
     if n_verbose_flags == 1:
         LOG.setLevel(logging.INFO)
     elif n_verbose_flags >= 2:
         LOG.setLevel(logging.DEBUG)
 
-def trace(*args):
+
+def trace(*args: Any) -> None: # noqa: ANN401
     """
     Emit a trace message.
 
@@ -50,7 +54,7 @@ def trace(*args):
         LOG.debug(_construct_msg(True, False, args))
 
 
-def is_trace_active() :
+def is_trace_active() -> bool :
     """
     Is trace logging on?
 
@@ -59,7 +63,7 @@ def is_trace_active() :
     return LOG.isEnabledFor(logging.DEBUG)
 
 
-def info(*args):
+def info(*args: Any) -> None: # noqa: ANN401
     """
     Emit an info message.
 
@@ -69,7 +73,7 @@ def info(*args):
         LOG.info(_construct_msg(False, False, args))
 
 
-def is_info_active():
+def is_info_active() -> bool:
     """
     Is info logging on?
 
@@ -78,7 +82,7 @@ def is_info_active():
     return LOG.isEnabledFor(logging.INFO)
 
 
-def warning(*args):
+def warning(*args: Any) -> None: # noqa: ANN401
     """
     Emit a warning message.
 
@@ -89,7 +93,7 @@ def warning(*args):
         LOG.warning(_construct_msg(False, LOG.isEnabledFor(logging.DEBUG), args))
 
 
-def is_warning_active():
+def is_warning_active() -> bool:
     """
     Is warning logging on?
 
@@ -98,7 +102,7 @@ def is_warning_active():
     return LOG.isEnabledFor(logging.WARNING)
 
 
-def error(*args):
+def error(*args: Any) -> None: # noqa: ANN401
     """
     Emit an error message.
 
@@ -108,7 +112,7 @@ def error(*args):
         LOG.error(_construct_msg(False, LOG.isEnabledFor(logging.DEBUG), args))
 
 
-def is_error_active():
+def is_error_active() -> bool:
     """
     Is error logging on?
 
@@ -117,7 +121,7 @@ def is_error_active():
     return LOG.isEnabledFor(logging.ERROR)
 
 
-def fatal(*args):
+def fatal(*args: Any) -> None: # noqa: ANN401
     """
     Emit a fatal error message and exit with code 1.
 
@@ -131,7 +135,7 @@ def fatal(*args):
     raise SystemExit(255) # Don't call exit() because that will close stdin
 
 
-def is_fatal_active():
+def is_fatal_active() -> bool:
     """
     Is fatal logging on?
 
@@ -140,7 +144,7 @@ def is_fatal_active():
     return LOG.isEnabledFor(logging.CRITICAL)
 
 
-def _construct_msg(with_loc, with_tb, *args):
+def _construct_msg(with_loc: bool, with_tb: bool, *args: Any) -> str: # noqa: ANN401
     """
     Construct a message from these arguments.
 
@@ -162,7 +166,7 @@ def _construct_msg(with_loc, with_tb, *args):
         ret = ''
 
 
-    def m(a):
+    def m(a: Any) -> Any: # noqa: ANN401 Any is fine
         """
         Formats provided arguments into something suitable for log messages.
 
@@ -177,8 +181,8 @@ def _construct_msg(with_loc, with_tb, *args):
             return type(a).__name__ + ' ' + str(a)
         return a
 
-    args2 = map(m, *args)
-    ret += ' '.join(map(str, args2))
+    args2 = map(m, *args, strict=True)
+    ret += ' '.join(map(str, args2, strict=True))
 
     if with_tb and len(*args) > 0:
         *_, last = iter(*args)

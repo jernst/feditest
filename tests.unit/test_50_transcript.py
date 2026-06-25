@@ -23,7 +23,7 @@ APP_NAMES = [
 driver_names = []
 
 @pytest.fixture(scope="module", autouse=True)
-def init_node_drivers():
+def init_node_drivers() -> None:
     global driver_names
 
     """ Keep these isolated to this module """
@@ -44,7 +44,7 @@ def init_node_drivers():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_tests():
+def init_tests() -> None:
     """
     Cleanly define some tests.
     """
@@ -132,7 +132,7 @@ def transcript(test_plan_fixture: TestPlan) -> TestRunResultTranscript:
     return ret
 
 
-def test_transcript(transcript: TestRunResultTranscript):
+def test_transcript(transcript: TestRunResultTranscript) -> None:
     assert transcript.plan
     assert transcript.id
     assert transcript.started

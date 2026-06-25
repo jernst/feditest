@@ -8,7 +8,7 @@ class TapTestRunTranscriptSerializer(FileOrStdoutTestRunTranscriptSerializer):
     """
     Knows how to serialize a TestRunTranscript into a report in TAP format.
     """
-    def _write(self, transcript: TestRunTranscript, fd: IO[str]):
+    def _write(self, transcript: TestRunTranscript, fd: IO[str]) -> None:
         plan = transcript.plan
         summary = transcript.build_summary()
 
@@ -38,7 +38,7 @@ class TapTestRunTranscriptSerializer(FileOrStdoutTestRunTranscriptSerializer):
                 else:
                     fd.write(f"#     - name: {role_name} -- not instantiated\n")
 
-            for test_index, run_test in enumerate(session_transcript.run_tests):
+            for _, run_test in enumerate(session_transcript.run_tests):
                 test_id += 1
 
                 plan_test_spec = plan_session_template.tests[run_test.plan_test_index]

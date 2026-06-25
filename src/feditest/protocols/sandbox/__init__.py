@@ -3,7 +3,6 @@ Abstractions for the toy "Sandbox" protocol.
 """
 
 from datetime import datetime, UTC
-from typing import List
 
 from feditest.nodedrivers import Node, NotImplementedByNodeError
 
@@ -11,7 +10,7 @@ class SandboxLogEvent:
     """
     The structure of the data inserted into the log.
     """
-    def __init__(self, a: float, b: float, c: float):
+    def __init__(self, a: float, b: float, c: float) -> None:
         self.when = datetime.now(UTC)
         self.a = a
         self.b = b
@@ -36,7 +35,7 @@ class SandboxMultServer(Node):
         raise NotImplementedByNodeError(self, SandboxMultServer.start_logging)
 
 
-    def get_and_clear_log(self) -> List[SandboxLogEvent] | None:
+    def get_and_clear_log(self) -> list[SandboxLogEvent] | None:
         """
         Stop logging of mult() operations, return what has been logged so far
         and clear the log

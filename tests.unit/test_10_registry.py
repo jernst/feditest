@@ -3,22 +3,23 @@ Test the UBOS host registry / CA
 """
 
 import tempfile
+from typing import cast
 
 from feditest.registry import Registry
 
 
-def test_allocates_domain():
+def test_allocates_domain() -> None:
     r = Registry.create()
     assert len(r.ca.domain) > 4
 
 
-def test_uses_domain():
+def test_uses_domain() -> None:
     D = 'something.example'
     r = Registry.create( D )
     assert r.ca.domain == D
 
 
-def test_root_ca():
+def test_root_ca() -> None:
     r = Registry.create()
     rr = r.obtain_registry_root()
     assert 'PRIVATE KEY' in rr.key
@@ -27,7 +28,7 @@ def test_root_ca():
     assert isinstance(rr.cert, str)
 
 
-def test_new_hosts():
+def test_new_hosts() -> None:
     D = 'something.example'
     r = Registry.create( D )
 
@@ -50,7 +51,7 @@ def test_new_hosts():
     assert h4.endswith('.' + D)
 
 
-def test_new_host_and_cert():
+def test_new_host_and_cert() -> None:
     D = 'something.example'
     r = Registry.create( D )
 
@@ -58,17 +59,17 @@ def test_new_host_and_cert():
 
     assert h1info.host.startswith('unnamed')
     assert h1info.host.endswith('.' + D)
-    assert 'PRIVATE KEY' in h1info.key
-    assert 'CERTIFICATE' in h1info.cert
+    assert 'PRIVATE KEY' in cast(str, h1info.key)
+    assert 'CERTIFICATE' in cast(str, h1info.cert)
     assert isinstance(h1info.key, str)
     assert isinstance(h1info.cert, str)
 
 
-def test_save_restore():
+def test_save_restore() -> None:
     D = 'something.example'
     r1 = Registry.create( D )
 
-    for i in range(5):
+    for _ in range(5):
          r1.obtain_new_hostinfo('')
 
     file = tempfile.NamedTemporaryFile(delete=True).name

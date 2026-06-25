@@ -14,7 +14,7 @@ class AnyObject:
     We use a generic container because we also want to be able to hold objects
     that are invalid according to the spec.
     """
-    def __init__(self, uri: str, json: Any):
+    def __init__(self, uri: str, json: Any) -> None: # noqa: ANN401 Any is fine
         self._uri = uri
         self._json = json
 
@@ -32,7 +32,7 @@ class AnyObject:
         return 'Object' == type
 
 
-    def as_actor(self) -> 'Actor':
+    def as_actor(self) -> Actor:
         """
         Interpret this instance as an Actor, and return an instance of the Actor class.
         """
@@ -40,7 +40,7 @@ class AnyObject:
         return Actor(self)
 
 
-    def as_collection(self) -> 'Collection':
+    def as_collection(self) -> Collection:
         """
         Interpret this instance as a Collection, and return an instance of the Collection class.
         """
@@ -48,7 +48,7 @@ class AnyObject:
         return Collection(self)
 
 
-    def json_field(self, name:str):
+    def json_field(self, name:str) -> Any: # noqa: ANN401 Any is fine
         """
         Convenience method to access field 'name' in the JSON.
         """
@@ -60,16 +60,16 @@ class Actor:
     """
     A facade in front of AnyObject that interprets AnyObject as an Actor.
     """
-    def __init__(self, delegate: AnyObject):
+    def __init__(self, delegate: AnyObject) -> None:
         self._delegate = delegate
 
 
-    def followers_uri(self):
+    def followers_uri(self) -> Any: # noqa: ANN401 Any is fine
         # FIXME can this be in different format, like a list?
         return self._delegate.json_field('followers')
 
 
-    def following_uri(self):
+    def following_uri(self) -> Any: # noqa: ANN401 Any is fine
         # FIXME can this be in different format, like a list?
         return self._delegate.json_field('following')
 
@@ -78,7 +78,7 @@ class Activity:
     """
     A facade in front of AnyObject that interprets AnyObject as an Activity.
     """
-    def __init__(self, delegate: AnyObject):
+    def __init__(self, delegate: AnyObject) -> None:
         self._delegate = delegate
 
 
@@ -86,11 +86,11 @@ class Collection:
     """
     A facade in front of AnyObject that interprets AnyObject as a Collection.
     """
-    def __init__(self, delegate: AnyObject):
+    def __init__(self, delegate: AnyObject) -> None:
         self._delegate = delegate
 
 
-    def is_ordered(self):
+    def is_ordered(self) -> bool:
         return 'OrderedCollection' == self._delegate.json_field('type')
 
 

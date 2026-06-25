@@ -3,7 +3,7 @@ WebFinger testing utils
 """
 
 from urllib.parse import quote, urlparse
-from typing import Any, Type, cast
+from typing import Any, cast
 
 from multidict import MultiDict
 from hamcrest.core.base_matcher import BaseMatcher
@@ -16,7 +16,7 @@ class UnsupportedUriSchemeError(RuntimeError):
     """
     Raised when a WebFinger resource uses a scheme other than http, https, acct
     """
-    def __init__(self, resource_uri: str):
+    def __init__(self, resource_uri: str) -> None:
         self.resource_uri = resource_uri
 
 
@@ -24,7 +24,7 @@ class CannotDetermineWebFingerHostError(RuntimeError):
     """
     Raised when the WebFinger host could not be determined.
     """
-    def __init__(self, resource_uri: str):
+    def __init__(self, resource_uri: str) -> None:
         self.resource_uri = resource_uri
 
 
@@ -69,15 +69,15 @@ class RecursiveEqualToMatcher(BaseMatcher):
     """
     Custom matcher: recursively match two objects
     """
-    def __init__(self, other: Any):
+    def __init__(self, other: Any) -> None: # noqa: ANN401 Any is fine
         self._other = other
 
 
-    def _matches(self, here: Any) -> bool:
-        return self._equals(here, self._other)
+    def _matches(self, item: Any) -> bool: # noqa: ANN401 Any is fine
+        return self._equals(item, self._other)
 
 
-    def _equals(self, a: Any, b: Any):
+    def _equals(self, a: Any, b: Any) -> bool: # noqa: ANN401 Any is fine
         if a is None:
             return b is None
         if b is None:
@@ -89,7 +89,7 @@ class RecursiveEqualToMatcher(BaseMatcher):
         if isinstance(a, (list, tuple, set)):
             if len(a) != len(b):
                 return False
-            return all(self._equals(aa, bb) for aa, bb in zip(a, b))
+            return all(self._equals(aa, bb) for aa, bb in zip(a, b, strict=True))
         if isinstance(a, dict):
             if len(a) != len(b):
                 return False
@@ -114,7 +114,7 @@ class LinkSubsetOrEqualToMatcher(BaseMatcher):
     or is the same with only a subset of the link elements.
     See https://pyhamcrest.readthedocs.io/en/latest/custom_matchers.html
     """
-    def __init__(self, jrd_with_superset: ClaimedJrd, rels: list[str] | None = None):
+    def __init__(self, jrd_with_superset: ClaimedJrd, rels: list[str] | None = None) -> None:
         """
         jrd_with_superset: the JRD to compare against
         rels: the rels the subset is not supposed to have stripped
@@ -123,12 +123,10 @@ class LinkSubsetOrEqualToMatcher(BaseMatcher):
         self._rels = rels or [] # that makes the code below simpler
 
 
-    def _matches(self, jrd_with_subset: ClaimedJrd) -> bool:
+    def _matches(self, item: ClaimedJrd) -> bool:
         if self._jrd_with_superset is None:
             return False
-        if jrd_with_subset is None:
-            return False
-        return jrd_with_subset.is_valid_link_subset(self._jrd_with_superset, self._rels)
+        return item.is_valid_link_subset(self._jrd_with_superset, self._rels)
 
 
     def describe_to(self, description: Description) -> None:
@@ -143,12 +141,12 @@ class MultiDictHasKeyMatcher(BaseMatcher):
     Custom matcher: decide whether a MultiDict has an entry with this name.
     Does not check whether there is a value or multiple values.
     """
-    def __init__(self, key: str):
+    def __init__(self, key: str) -> None:
         self._key = key
 
 
-    def _matches(self, multi_dict: MultiDict) -> bool:
-        return self._key in multi_dict
+    def _matches(self, item: MultiDict) -> bool:
+        return self._key in item
 
 
     def describe_to(self, description: Description) -> None:
@@ -160,20 +158,20 @@ class NoExceptionOtherThanMatcher(BaseMatcher):
     Custom matcher: decode whether an Exception (which may be an ExceptionGroup) contains
     any Exception other than the provided allowed exceptions.
     """
-    def __init__(self, allowed_excs: list[Type[Exception]]):
+    def __init__(self, allowed_excs: list[type[Exception]]) -> None:
         self._allowed_excs = allowed_excs
 
 
-    def _matches(self, candidate: Exception | list[Exception] | None) -> bool:
-        if candidate is None:
+    def _matches(self, item: Exception | list[Exception] | None) -> bool:
+        if item is None:
             return True
-        if type(candidate) is list:
-            for cand in candidate:
+        if type(item) is list:
+            for cand in item:
                 if not self._matches_single(cand):
                     return False
             return True
 
-        return self._matches_single(cast(Exception, candidate))
+        return self._matches_single(cast(Exception, item))
 
 
     def _matches_single(self, candidate: Exception) -> bool:
@@ -182,7 +180,7 @@ class NoExceptionOtherThanMatcher(BaseMatcher):
                 if not self._matches_single(cand):
                     return False
             return True
-        
+
         for allowed in self._allowed_excs:
             if isinstance(candidate, allowed):
                 return True

@@ -138,7 +138,7 @@ class FallbackFediverseNode(FediverseNode):
 
 
     @override
-    def make_reply_note(self, actor_acct_uri, to_be_replied_to_object_uri: str, reply_content: str) -> str:
+    def make_reply_note(self, actor_acct_uri: str, to_be_replied_to_object_uri: str, reply_content: str) -> str:
         return prompt_user_parse_validate(
                 f'On FediverseNode "{ self.hostname }", make actor "{ actor_acct_uri }" reply to object with "{ to_be_replied_to_object_uri }"'
                 + ' and enter the reply note\'s URI when created.'

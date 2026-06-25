@@ -2,7 +2,6 @@
 Run some sandbox protocol tests.
 """
 
-from typing import List
 
 from hamcrest import equal_to, close_to
 import pytest
@@ -16,7 +15,7 @@ from feditest.testruncontroller import AutomaticTestRunController
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_node_drivers():
+def init_node_drivers() -> None:
     """
     Cleanly define the NodeDrivers.
     """
@@ -25,7 +24,7 @@ def init_node_drivers():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_tests():
+def init_tests() -> None:
     """
     Cleanly define some tests.
     These tests are the same as those run in "sandbox-all-clientA-vs-server1.json" from the feditest-tests-sandbox repo.
@@ -45,8 +44,8 @@ def init_tests():
         Tests the sandbox toy protocol using a FediTest test class.
         """
         def __init__(self,
-            client: SandboxMultClient,
-            server: SandboxMultServer
+                client: SandboxMultClient,
+                server: SandboxMultServer
         ) -> None:
             self.client = client
             self.server = server
@@ -59,14 +58,14 @@ def init_tests():
 
 
         @step
-        def step1(self):
+        def step1(self) -> None:
             self.server.start_logging()
 
             self.c : float = self.client.cause_mult(self.server, self.a, self.b)
 
             assert_that(self.c, close_to(15.0, 0.5))
 
-            log: List[SandboxLogEvent] = self.server.get_and_clear_log()
+            log: list[SandboxLogEvent] = self.server.get_and_clear_log()
 
             assert_that(len(log), equal_to(1))
             assert_that(log[0].a, equal_to(self.a))
@@ -75,7 +74,7 @@ def init_tests():
 
 
         @step
-        def step2(self):
+        def step2(self) -> None:
 
             c_squared = self.client.cause_mult(self.server, self.c, self.c)
 
@@ -100,7 +99,7 @@ def init_tests():
 
         assert_that(c, equal_to(14.0))
 
-        log: List[SandboxLogEvent] = server.get_and_clear_log()
+        log: list[SandboxLogEvent] = server.get_and_clear_log()
 
         assert_that(len(log), equal_to(1))
         assert_that(log[0].a, equal_to(a))
@@ -165,7 +164,7 @@ def test_plan_fixture() -> TestPlan:
     return ret
 
 
-def test_run_testplan(test_plan_fixture: TestPlan):
+def test_run_testplan(test_plan_fixture: TestPlan) -> None:
     test_plan_fixture.check_can_be_executed()
 
     test_run = TestRun(test_plan_fixture)

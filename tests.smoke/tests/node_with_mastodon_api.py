@@ -5,6 +5,7 @@ problems here are problems in our NodeDriver, not Fediverse interop problems.
 """
 
 from datetime import datetime
+from typing import cast
 
 from feditest import poll_until, step, test
 from feditest.nodedrivers.mastodon import NodeWithMastodonAPI
@@ -27,12 +28,12 @@ class CreateNoteTest:
         server: NodeWithMastodonAPI
     ) -> None:
         self.server = server
-        self.actor_acct_uri = None
-        self.note_uri = None
+        self.actor_acct_uri : str | None = None
+        self.note_uri : str | None = None
 
 
     @step
-    def provision_actor(self):
+    def provision_actor(self) -> None:
         self.actor_acct_uri = self.server.obtain_actor_acct_uri()
         assert self.actor_acct_uri
 
@@ -43,14 +44,18 @@ class CreateNoteTest:
 
 
     @step
-    def create_note(self):
-        self.note_uri = self.server.make_create_note(self.actor_acct_uri, f"testing make_create_note {datetime.now()}")
+    def create_note(self) -> None:
+        self.note_uri = self.server.make_create_note(
+                cast(str, self.actor_acct_uri),
+                f"testing make_create_note {datetime.now()}")
         assert self.note_uri
 
 
     @step
-    def wait_for_note_in_inbox(self):
-        poll_until(lambda: self.server.actor_has_received_object(self.actor_acct_uri, self.note_uri))
+    def wait_for_note_in_inbox(self) -> None:
+        poll_until(lambda: self.server.actor_has_received_object(
+                cast(str, self.actor_acct_uri),
+                cast(str, self.note_uri)))
 
 
 #    @step
@@ -58,10 +63,12 @@ class CreateNoteTest:
 #        self._reset_all()
 
 
-    def _reset_all(self):
+    def _reset_all(self) -> None:
         """
         Clean up data. This is here so the test is usable with non-brand-new instances.
         """
-        self.server.delete_all_followers_of(self.actor_acct_uri)
-        self.server.delete_all_statuses_by(self.actor_acct_uri)
+        self.server.delete_all_followers_of(
+                cast(str, self.actor_acct_uri))
+        self.server.delete_all_statuses_by(
+                cast(str,self.actor_acct_uri))
 

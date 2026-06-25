@@ -13,7 +13,7 @@ from feditest import test
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_node_drivers():
+def init_node_drivers() -> None:
     """
     Cleanly define the NodeDrivers.
     """
@@ -22,7 +22,7 @@ def init_node_drivers():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_tests():
+def init_tests() -> None:
     """
     Cleanly define some tests.
     """
@@ -65,7 +65,7 @@ def the_test_plan() -> TestPlan:
     return ret
 
 
-def test_run_testplan(the_test_plan: TestPlan):
+def test_run_testplan(the_test_plan: TestPlan) -> None:
     the_test_plan.check_can_be_executed()
 
     test_run = TestRun(the_test_plan)

@@ -9,7 +9,7 @@ from enum import Enum
 from inspect import getmembers, getmodule, isfunction
 import time
 from types import FunctionType
-from typing import Any, Type, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from hamcrest.core.matcher import Matcher
 from hamcrest.core.string_description import StringDescription
@@ -207,13 +207,11 @@ def load_node_drivers_from(dirs: list[str] | None) -> None:
 
 
 # Holds all node drivers
-all_node_drivers : dict[str,Type[Any]]= {}
-
-TNodeDriver = TypeVar('TNodeDriver')
+all_node_drivers : dict[str,type[Any]]= {}
 
 DISABLE_NODEDRIVER_DISCOVERY_FOR_UNIT_TESTING = False
 
-def nodedriver(to_register: Type[TNodeDriver]) -> Type[TNodeDriver]:
+def nodedriver[TNodeDriver](to_register: type[TNodeDriver]) -> type[TNodeDriver]:
     """
     Used as decorator of NodeDriver classes, like this:
 
@@ -256,7 +254,7 @@ class SpecLevel(Enum):
 
 
     @property
-    def formatted_name(self):
+    def formatted_name(self) -> str:
         return self.name.capitalize()
 
 
@@ -268,7 +266,7 @@ class InteropLevel(Enum):
 
 
     @property
-    def formatted_name(self):
+    def formatted_name(self) -> str:
         return self.name.capitalize()
 
 
@@ -276,17 +274,17 @@ class AssertionFailure(Exception):
     """
     Indicates a failure in the system under test.
     """
-    def __init__(self, spec_level: SpecLevel, interop_level: InteropLevel, msg: Any):
+    def __init__(self, spec_level: SpecLevel, interop_level: InteropLevel, msg: str) -> None:
         self.spec_level = spec_level
         self.interop_level = interop_level
         self.msg = msg
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'AssertionFailure ({ self.spec_level.formatted_name }, { self.interop_level.formatted_name }): { self.msg }'
 
 
-def _assert_match(
+def _assert_match[T](
     actual: T,
     matcher: Matcher[T],
     reason: str,
@@ -302,7 +300,7 @@ def _assert_match(
         ).append_text("\n     but: ")
         matcher.describe_mismatch(actual, description)
         description.append_text("\n")
-        raise AssertionFailure(spec_level, interop_level, description)
+        raise AssertionFailure(spec_level, interop_level, str(description))
 
 
 def _assert_bool(
@@ -319,8 +317,8 @@ def _assert_bool(
 
 def assert_that(
     actual_or_assertion: object,
-    matcher=None,
-    reason="",
+    matcher : Matcher | str | None =None,
+    reason : str = "",
     spec_level: SpecLevel | None = None,
     interop_level: InteropLevel | None = None
 ) -> None:
@@ -337,11 +335,11 @@ def assert_that(
         _assert_match(actual=actual_or_assertion, matcher=matcher, reason=reason, spec_level=spec_level, interop_level=interop_level)
     else:
         if isinstance(actual_or_assertion, Matcher):
-            warning("arg1 should be boolean, but was {}".format(type(actual_or_assertion)))
+            warning(f"arg1 should be boolean, but was { type(actual_or_assertion) }")
         _assert_bool(assertion=cast(bool, actual_or_assertion), reason=cast(str, matcher), spec_level=spec_level, interop_level=interop_level)
 
 
-def poll_until(
+def poll_until[T](
     condition: Callable[[], T | None],
     msg: str | None = None,
     retry_count: int = 5,
@@ -367,7 +365,7 @@ def poll_until(
     raise AssertionFailure(spec_level, interop_level, msg)
 
 
-def poll_but_not(
+def poll_but_not[T](
     condition: Callable[[], T | None],
     msg: str | None = None,
     retry_count: int = 5,

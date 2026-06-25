@@ -29,7 +29,7 @@ class Imp(AbstractWebFingerDiagClient):
     In-process diagnostic WebFinger client.
     """
     @override
-    def http(self, request: HttpRequest, follow_redirects: bool = True, verify=False) -> HttpRequestResponsePair:
+    def http(self, request: HttpRequest, follow_redirects: bool = True, verify: bool = False) -> HttpRequestResponsePair:
         trace( f'Performing HTTP { request.method } on { request.parsed_uri.uri }')
 
         httpx_response = None

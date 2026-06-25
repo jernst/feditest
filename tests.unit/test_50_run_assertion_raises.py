@@ -19,7 +19,7 @@ from feditest.testruntranscriptserializer.tap import TapTestRunTranscriptSeriali
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_node_drivers():
+def init_node_drivers() -> None:
     """
     Cleanly define the NodeDrivers.
     """
@@ -28,7 +28,7 @@ def init_node_drivers():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def init_tests():
+def init_tests() -> None:
     """
     Cleanly define some tests.
     """
@@ -184,7 +184,7 @@ def the_test_plan() -> TestPlan:
     return ret
 
 
-def test_run_testplan(the_test_plan: TestPlan):
+def test_run_testplan(the_test_plan: TestPlan) -> None:
     the_test_plan.check_can_be_executed()
 
     test_run = TestRun(the_test_plan)
@@ -240,7 +240,7 @@ def test_run_testplan(the_test_plan: TestPlan):
         SummaryTestRunTranscriptSerializer().write(transcript, f'{ basename(__file__) }.transcript.summary.txt')
 
 
-def multi_assert(index: int, t: list[TestRunTestTranscript], spec_level: SpecLevel, interop_level: InteropLevel):
+def multi_assert(index: int, t: list[TestRunTestTranscript], spec_level: SpecLevel, interop_level: InteropLevel)  -> None:
     assert t[index].result.type == 'AssertionFailure'
     assert t[index].result.spec_level == spec_level.name
     assert t[index].result.interop_level == interop_level.name
