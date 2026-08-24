@@ -1,6 +1,6 @@
 """
 Test that Accounts and NonExistingAccounts are parsed correctly when given in a TestPlan that
-specifies a MastodonUbosNodeDriver
+specifies a MastodonUbosAdminNodeDriver
 """
 
 from collections.abc import Iterator
@@ -57,8 +57,8 @@ def set_global_variable() -> Iterator[None]:
 
 @pytest.fixture(autouse=True)
 def the_test_plan() -> TestPlan:
-    from feditest.nodedrivers.mastodon.ubosgears import MastodonUbosNodeDriver
-    node_driver = MastodonUbosNodeDriver()
+    from feditest.nodedrivers.mastodon.ubos_admin import MastodonUbosAdminNodeDriver
+    node_driver = MastodonUbosAdminNodeDriver()
 
     parameters = None
     plan_accounts = [

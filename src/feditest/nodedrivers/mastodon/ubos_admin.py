@@ -24,11 +24,11 @@ from feditest.nodedrivers.mastodon import (
     MastodonNode,
     MastodonUserPasswordAccount
 )
-from feditest.nodedrivers.mastodon.ubosgears_shared import MastodonUbosNodeConfiguration
-from feditest.nodedrivers.ubosgears import (
-    UbosNode,
-    UbosNodeConfiguration,
-    UbosNodeDriver
+from feditest.nodedrivers.mastodon.ubos_admin_shared import MastodonUbosAdminNodeConfiguration
+from feditest.nodedrivers.ubos_admin import (
+    UbosAdminNode,
+    UbosAdminNodeConfiguration,
+    UbosAdminNodeDriver
 )
 from feditest.protocols.fediverse import (
     FediverseNonExistingAccount,
@@ -41,7 +41,7 @@ from feditest.reporting import error, trace
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeAccountField, TestPlanNodeNonExistingAccountField
 
 
-class MastodonUbosAccountManager(DefaultAccountManager):
+class MastodonUbosAdminAccountManager(DefaultAccountManager):
     """
     Knows how to provision new accounts in Mastodon
     """
@@ -53,13 +53,13 @@ class MastodonUbosAccountManager(DefaultAccountManager):
         super().set_node(node)
 
         if not self._accounts_allocated_to_role and not self._accounts_not_allocated_to_role:
-            config = cast(UbosNodeConfiguration, node.config)
+            config = cast(UbosAdminNodeConfiguration, node.config)
             admin_account = MastodonUserPasswordAccount(None, config.admin_userid, config.admin_credential, config.admin_email)
             admin_account.set_node(node)
             self._accounts_not_allocated_to_role.append(admin_account)
 
 
-class MastodonUbosNode(MastodonNode, UbosNode):
+class MastodonUbosAdminNode(MastodonNode, UbosAdminNode):
     """
     A Mastodon Node running on UBOS. This means we know how to interact with it exactly.
     """
@@ -103,19 +103,19 @@ class MastodonUbosNode(MastodonNode, UbosNode):
 
 
     def _invoke_tootctl(self, args: str) -> subprocess.CompletedProcess:
-        config = cast(UbosNodeConfiguration, self.config)
+        config = cast(UbosAdminNodeConfiguration, self.config)
 
         cmd = f'cd /ubos/lib/mastodon/{ config.appconfigid }/mastodon'
         cmd += ' && sudo RAILS_ENV=production bin/tootctl ' # This needs to be run as root, because .env.production is not world-readable
         cmd += args
 
-        node_driver = cast(MastodonUbosNodeDriver, self.node_driver)
+        node_driver = cast(MastodonUbosAdminNodeDriver, self.node_driver)
         ret = node_driver._exec_shell(cmd, config.rshcmd, capture_output=True)
         return ret
 
 
 @nodedriver
-class MastodonUbosNodeDriver(UbosNodeDriver):
+class MastodonUbosAdminNodeDriver(UbosAdminNodeDriver):
     """
     Installs/uninstalls a new Mastodon instance as a virtual host on UBOS Linux using ubos-admin.
     """
@@ -150,7 +150,7 @@ class MastodonUbosNodeDriver(UbosNodeDriver):
         # Once has the Node has been instantiated (we can't do that here yet): if the user did not specify at least one Account, we add the admin account
 
         return (
-            MastodonUbosNodeConfiguration.create_from_node_in_testplan(
+            MastodonUbosAdminNodeConfiguration.create_from_node_in_testplan(
                 test_plan_node,
                 self,
                 appconfigjson = {
@@ -170,9 +170,9 @@ class MastodonUbosNodeDriver(UbosNodeDriver):
                 defaults = {
                     'app' : 'Mastodon'
                 }),
-            MastodonUbosAccountManager(accounts, non_existing_accounts)
+            MastodonUbosAdminAccountManager(accounts, non_existing_accounts)
         )
 
     @override
-    def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> Node:
-        return MastodonUbosNode(rolename, config, account_manager)
+    def _instantiate_ubos_node(self, rolename: str, config: UbosAdminNodeConfiguration, account_manager: AccountManager) -> Node:
+        return MastodonUbosAdminNode(rolename, config, account_manager)

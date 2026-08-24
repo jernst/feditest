@@ -4,15 +4,15 @@ Generic UBOS Gears Driver
 from typing import override
 
 from feditest import nodedriver
-from feditest.nodedrivers.ubosgears import CONTEXT_PAR, UbosNode, UbosNodeConfiguration, UbosNodeDriver
+from feditest.nodedrivers.ubos_admin import CONTEXT_PAR, UbosAdminNode, UbosAdminNodeConfiguration, UbosAdminNodeDriver
 from feditest.nodedrivers import APP_PAR, AccountManager, DefaultAccountManager, NodeConfiguration
 from feditest.testplan import TestPlanConstellationNode
 
 @nodedriver
-class GenericUbosNodeDriver(UbosNodeDriver):
+class GenericUbosAdminNodeDriver(UbosAdminNodeDriver):
     @override
-    def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> UbosNode:
-        return  UbosNode(rolename, config, account_manager)
+    def _instantiate_ubos_node(self, rolename: str, config: UbosAdminNodeConfiguration, account_manager: AccountManager) -> UbosAdminNode:
+        return  UbosAdminNode(rolename, config, account_manager)
 
 
     @override
@@ -22,7 +22,7 @@ class GenericUbosNodeDriver(UbosNodeDriver):
         context = test_plan_node.parameter(CONTEXT_PAR) or ''
 
         return (
-            UbosNodeConfiguration.create_from_node_in_testplan(
+            UbosAdminNodeConfiguration.create_from_node_in_testplan(
                     test_plan_node,
                     self,
                     {

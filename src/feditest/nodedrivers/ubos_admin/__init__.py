@@ -29,7 +29,7 @@ from feditest.utils import email_validate
 
 
 """
-There is no UbosNode: all relevant info is in the UbosNodeConfiguration.
+There is no UbosAdminNode: all relevant info is in the UbosAdminNodeConfiguration.
 """
 
 CONTEXT_PAR = TestPlanNodeParameter(
@@ -119,7 +119,7 @@ class UbosAdminException(Exception):
     """
     Thrown if a `ubos-admin` operation failed.
     """
-    def __init__(self, node_driver: UbosNodeDriver, cmd: str, indata: str | None = None, stdout: str | None = None, stderr: str | None = None) -> None:
+    def __init__(self, node_driver: UbosAdminNodeDriver, cmd: str, indata: str | None = None, stdout: str | None = None, stderr: str | None = None) -> None:
         msg = f'node_driver: { node_driver }, cmd: "{ cmd }"'
         if indata:
             msg += f'\ninput data: { indata }'
@@ -130,12 +130,12 @@ class UbosAdminException(Exception):
         super().__init__(msg)
 
 
-class UbosNodeConfiguration(NodeConfiguration):
+class UbosAdminNodeConfiguration(NodeConfiguration):
     """
     Adds configuration information specific to UBOS. This is an abstract superclass.
     """
     def __init__(self,
-        node_driver: UbosNodeDriver,
+        node_driver: UbosAdminNodeDriver,
         siteid: str,
         appconfigid: str,
         appconfigjson: dict[str,Any],
@@ -190,20 +190,20 @@ class UbosNodeConfiguration(NodeConfiguration):
     @staticmethod
     def create_from_node_in_testplan(
         test_plan_node: TestPlanConstellationNode,
-        node_driver: UbosNodeDriver,
+        node_driver: UbosAdminNodeDriver,
         appconfigjson: dict[str, Any],
         defaults: dict[str, str | None] | None = None
-    ) -> UbosNodeConfiguration:
+    ) -> UbosAdminNodeConfiguration:
         """
         Parses the information provided in the "parameters" dict of TestPlanConstellationNode
         """
-        siteid = test_plan_node.parameter(SITEID_PAR, defaults=defaults) or UbosNodeConfiguration._generate_siteid()
-        appconfigid = test_plan_node.parameter(APPCONFIGID_PAR, defaults=defaults) or UbosNodeConfiguration._generate_appconfigid()
+        siteid = test_plan_node.parameter(SITEID_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_siteid()
+        appconfigid = test_plan_node.parameter(APPCONFIGID_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_appconfigid()
         app = test_plan_node.parameter_or_raise(APP_PAR, defaults=defaults)
         hostname = test_plan_node.parameter(HOSTNAME_PAR) or registry_singleton().obtain_new_hostname(app)
         admin_userid = test_plan_node.parameter(ADMIN_USERID_PAR, defaults=defaults) or 'feditestadmin'
         admin_username = test_plan_node.parameter(ADMIN_USERNAME_PAR, defaults=defaults) or 'feditestadmin'
-        admin_credential = test_plan_node.parameter(ADMIN_CREDENTIAL_PAR, defaults=defaults) or UbosNodeConfiguration._generate_credential()
+        admin_credential = test_plan_node.parameter(ADMIN_CREDENTIAL_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_credential()
         admin_email = test_plan_node.parameter(ADMIN_EMAIL_PAR, defaults=defaults) or f'{ admin_userid }@{ hostname }'
         start_delay_1 = test_plan_node.parameter(START_DELAY_PAR, defaults=defaults)
         if start_delay_1:
@@ -220,7 +220,7 @@ class UbosNodeConfiguration(NodeConfiguration):
             if not backup_appconfigid:
                 raise TestPlanNodeParameterRequiredError(BACKUP_APPCONFIGID_PAR, f' when "{ BACKUP_APPCONFIGID_PAR }" is given')
 
-            return UbosNodeFromBackupConfiguration(
+            return UbosAdminNodeFromBackupConfiguration(
                 node_driver = node_driver,
                 siteid = siteid,
                 appconfigid = appconfigid,
@@ -245,7 +245,7 @@ class UbosNodeConfiguration(NodeConfiguration):
             if backup_appconfigid:
                 raise TestPlanNodeParameterMalformedError(BACKUP_APPCONFIGID_PAR, f' must not be given unless "{ BACKUP_APPCONFIGID_PAR }" is given as well')
 
-            return UbosNodeDeployConfiguration(
+            return UbosAdminNodeDeployConfiguration(
                 node_driver = node_driver,
                 siteid = siteid,
                 appconfigid = appconfigid,
@@ -335,7 +335,7 @@ class UbosNodeConfiguration(NodeConfiguration):
         return ret
 
 
-class UbosNodeDeployConfiguration(UbosNodeConfiguration):
+class UbosAdminNodeDeployConfiguration(UbosAdminNodeConfiguration):
     """
     Configuration of a UBOS Node that is instantiated with 'ubos-admin deploy'
     """
@@ -344,7 +344,7 @@ class UbosNodeDeployConfiguration(UbosNodeConfiguration):
         tlscert = self._tlscert
         if tlskey is None or tlscert is None:
             # Obtain these as late as possible, so all hostnames etc in the constellation are known
-            hostname = cast(str, self.hostname) # In the UbosNodeConfiguration it is mandatory
+            hostname = cast(str, self.hostname) # In the UbosAdminNodeConfiguration it is mandatory
             info = registry_singleton().obtain_hostinfo(hostname)
             if tlskey is None:
                 tlskey = info.key
@@ -373,12 +373,12 @@ class UbosNodeDeployConfiguration(UbosNodeConfiguration):
         return json.dumps(almost)
 
 
-class UbosNodeFromBackupConfiguration(UbosNodeConfiguration):
+class UbosAdminNodeFromBackupConfiguration(UbosAdminNodeConfiguration):
     """
     Configuration of a UBOS Node that is instantiated from a backup file with 'ubos-admin restore'
     """
     def __init__(self,
-        node_driver: UbosNodeDriver,
+        node_driver: UbosAdminNodeDriver,
         siteid: str,
         appconfigid: str,
         appconfigjson: dict[str, Any],
@@ -422,7 +422,7 @@ class UbosNodeFromBackupConfiguration(UbosNodeConfiguration):
         tlscert = self._tlscert
         if tlskey is None or tlscert is None:
             # Obtain these as late as possible, so all hostnames etc in the constellation are known
-            hostname = cast(str, self.hostname) # In the UbosNodeConfiguration it is mandatory
+            hostname = cast(str, self.hostname) # In the UbosAdminNodeConfiguration it is mandatory
             info = registry_singleton().obtain_hostinfo(hostname)
             if tlskey is None:
                 tlskey = info.key
@@ -456,26 +456,26 @@ class UbosNodeFromBackupConfiguration(UbosNodeConfiguration):
         return self._backup_appconfigid
 
 
-class UbosNode(Node):
+class UbosAdminNode(Node):
     """
     Defines functionality common to Nodes provisioned through UBOS Gears.
     """
     def add_cert_to_trust_store(self, root_cert: str) -> None:
-        config = cast(UbosNodeConfiguration, self.config)
-        node_driver = cast(UbosNodeDriver, self.node_driver)
+        config = cast(UbosAdminNodeConfiguration, self.config)
+        node_driver = cast(UbosAdminNodeDriver, self.node_driver)
 
         node_driver.add_cert_to_trust_store_via(root_cert, config.rshcmd)
 
 
     def remove_cert_from_trust_store(self, root_cert: str) -> None:
-        config = cast(UbosNodeConfiguration, self.config)
-        node_driver = cast(UbosNodeDriver, self.node_driver)
+        config = cast(UbosAdminNodeConfiguration, self.config)
+        node_driver = cast(UbosAdminNodeDriver, self.node_driver)
 
         node_driver.remove_cert_from_trust_store_via(root_cert, config.rshcmd)
 
 
 
-class UbosNodeDriver(NodeDriver):
+class UbosAdminNodeDriver(NodeDriver):
     """
     A general-purpose NodeDriver for Nodes provisioned through UBOS Gears.
     """
@@ -497,8 +497,8 @@ class UbosNodeDriver(NodeDriver):
         * `sudo machinectl shell ubosdev@container`
         * Because of its generality, the syntax of this parameter is not validated.
         """
-        trace(f'UbosNodeDriver provision node {rolename}')
-        config = cast(UbosNodeConfiguration, config)
+        trace(f'UbosAdminNodeDriver provision node {rolename}')
+        config = cast(UbosAdminNodeConfiguration, config)
 
         if config._rshcmd:
             if self._exec_shell('which ubos-admin', config._rshcmd).returncode:
@@ -508,12 +508,12 @@ class UbosNodeDriver(NodeDriver):
                 raise OSError(f'{ type(self).__name__ } without an rshcmd requires a local system running UBOS Gears (see https://feditest.org/glossary/ubosgears/).')
 
         if account_manager is None:
-            raise RuntimeError(f'No AccountManager set for rolename { rolename } with UbosNodeDriver { self }')
+            raise RuntimeError(f'No AccountManager set for rolename { rolename } with UbosAdminNodeDriver { self }')
 
         # We currently have 2 modes
-        if isinstance(config, UbosNodeFromBackupConfiguration):
+        if isinstance(config, UbosAdminNodeFromBackupConfiguration):
             self._provision_node_from_backupfile(config, account_manager)
-        elif isinstance(config, UbosNodeDeployConfiguration):
+        elif isinstance(config, UbosAdminNodeDeployConfiguration):
             self._provision_node_with_generated_sitejson(config, account_manager)
         else:
             raise RuntimeError(f'Unexpected type of config: { config }')
@@ -523,12 +523,12 @@ class UbosNodeDriver(NodeDriver):
             return ret
 
         except Exception as e:
-            warning('Something went wrong during instantiation of UbosNode, undeploying:', e)
+            warning('Something went wrong during instantiation of UbosAdminNode, undeploying:', e)
             self._cleanup_node(config)
             raise e
 
 
-    def _provision_node_from_backupfile(self, config: UbosNodeFromBackupConfiguration, account_manager: AccountManager) -> None:
+    def _provision_node_from_backupfile(self, config: UbosAdminNodeFromBackupConfiguration, account_manager: AccountManager) -> None:
         """
         We deploy a new, empty site.
         Then we add one AppConfig to it from backup.
@@ -565,7 +565,7 @@ class UbosNodeDriver(NodeDriver):
             raise UbosAdminException(self, cmd, result.stdout, result.stderr)
 
 
-    def _provision_node_with_generated_sitejson(self, config: UbosNodeDeployConfiguration, account_manager: AccountManager) -> None:
+    def _provision_node_with_generated_sitejson(self, config: UbosAdminNodeDeployConfiguration, account_manager: AccountManager) -> None:
         siteJson = config.obtain_site_json()
 
         cmd = 'sudo ubos-admin deploy --stdin'
@@ -574,12 +574,12 @@ class UbosNodeDriver(NodeDriver):
             raise UbosAdminException(self, cmd, siteJson, result.stdout, result.stderr)
 
 
-    def _getAppConfigJson(self, config: UbosNodeDeployConfiguration) -> dict[str,Any]:
+    def _getAppConfigJson(self, config: UbosAdminNodeDeployConfiguration) -> dict[str,Any]:
         raise Exception( 'AppConfig fragment for the Site JSON file must be defined in a subclass')
 
 
     @abstractmethod
-    def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> Node:
+    def _instantiate_ubos_node(self, rolename: str, config: UbosAdminNodeConfiguration, account_manager: AccountManager) -> Node:
         """
         This needs to be subclassed to control/observe the running UBOS Node programmatically.
         """
@@ -587,24 +587,24 @@ class UbosNodeDriver(NodeDriver):
 
 
     def _unprovision_node(self, node: Node) -> None:
-        trace(f'UbosNodeDriver unprovision node { node.rolename }')
-        config = cast(UbosNodeConfiguration, node.config)
+        trace(f'UbosAdminNodeDriver unprovision node { node.rolename }')
+        config = cast(UbosAdminNodeConfiguration, node.config)
         cmd = f"sudo ubos-admin undeploy --siteid { config.siteid }"
         result = self._exec_shell(cmd, config.rshcmd, capture_output=True)
         if result.returncode:
             raise UbosAdminException(self, cmd, result.stdout, result.stderr)
 
 
-    def _cleanup_node(self, config: UbosNodeConfiguration) -> None:
-        trace('Cleaning up Node provisioned with UbosNodeDriver')
+    def _cleanup_node(self, config: UbosAdminNodeConfiguration) -> None:
+        trace('Cleaning up Node provisioned with UbosAdminNodeDriver')
         self._exec_shell( f"sudo ubos-admin undeploy --siteid { config.siteid }", config.rshcmd ) # ignore errors
 
 
     def _exec_shell(self, cmd: str, rshcmd: str | None = None, stdin_content: str | None = None, capture_output : bool = False) -> subprocess.CompletedProcess:
         """
         Invoke a shell command either locally or remotely over rshcmd.
-        This is defiend on UbosNodeDriver, not UbosNode, so we can invoke it before attempting to
-        instantiate the UbosNode.
+        This is defiend on UbosAdminNodeDriver, not UbosAdminNode, so we can invoke it before attempting to
+        instantiate the UbosAdminNode.
         This returns the Python CompletedProcess type
         """
         if rshcmd:
@@ -636,7 +636,7 @@ class UbosNodeDriver(NodeDriver):
 
     def add_cert_to_trust_store_via(self, root_cert: str, rshcmd: str | None) -> None:
         """
-        On behalf of the UbosNode (which isn't a class, by conceptually is a thing), save this
+        On behalf of the UbosAdminNode (which isn't a class, by conceptually is a thing), save this
         root_cert in PEM format to the Device's trust store.
 
         Note: This may be invoked more than once on the same Device with the same data. We are

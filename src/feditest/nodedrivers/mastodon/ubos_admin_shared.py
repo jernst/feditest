@@ -5,10 +5,10 @@ from typing import Any, cast, override
 
 from feditest.nodedrivers import APP_PAR, APP_VERSION_PAR, HOSTNAME_PAR
 from feditest.nodedrivers.mastodon import NodeWithMastodonApiConfiguration
-from feditest.nodedrivers.ubosgears import (
-    UbosNodeConfiguration,
-    UbosNodeDeployConfiguration,
-    UbosNodeDriver,
+from feditest.nodedrivers.ubos_admin import (
+    UbosAdminNodeConfiguration,
+    UbosAdminNodeDeployConfiguration,
+    UbosAdminNodeDriver,
     ADMIN_CREDENTIAL_PAR,
     ADMIN_EMAIL_PAR,
     ADMIN_USERID_PAR,
@@ -26,9 +26,9 @@ from feditest.registry import registry_singleton
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeParameterMalformedError
 
 
-class MastodonUbosNodeConfiguration(UbosNodeDeployConfiguration, NodeWithMastodonApiConfiguration):
+class MastodonUbosAdminNodeConfiguration(UbosAdminNodeDeployConfiguration, NodeWithMastodonApiConfiguration):
     def __init__(self,
-        node_driver: UbosNodeDriver,
+        node_driver: UbosAdminNodeDriver,
         siteid: str,
         appconfigid: str,
         appconfigjson: dict[str,Any],
@@ -44,7 +44,7 @@ class MastodonUbosNodeConfiguration(UbosNodeDeployConfiguration, NodeWithMastodo
         start_delay: float = 0.0,
         rshcmd: str | None = None,
     ) -> None:
-        super(UbosNodeDeployConfiguration,self).__init__(
+        super(UbosAdminNodeDeployConfiguration,self).__init__(
             node_driver = node_driver,
             siteid = siteid,
             appconfigid = appconfigid,
@@ -69,21 +69,21 @@ class MastodonUbosNodeConfiguration(UbosNodeDeployConfiguration, NodeWithMastodo
     @staticmethod
     def create_from_node_in_testplan(
         test_plan_node: TestPlanConstellationNode,
-        node_driver: UbosNodeDriver,
+        node_driver: UbosAdminNodeDriver,
         appconfigjson: dict[str, Any],
         defaults: dict[str, str | None] | None = None
-    ) -> UbosNodeConfiguration:
+    ) -> UbosAdminNodeConfiguration:
         """
         This is largely copied from the superclass.
         """
-        real_node_driver = cast(UbosNodeDriver, node_driver) # Make linter happy
-        siteid = test_plan_node.parameter(SITEID_PAR, defaults=defaults) or UbosNodeConfiguration._generate_siteid()
-        appconfigid = test_plan_node.parameter(APPCONFIGID_PAR, defaults=defaults) or UbosNodeConfiguration._generate_appconfigid()
+        real_node_driver = cast(UbosAdminNodeDriver, node_driver) # Make linter happy
+        siteid = test_plan_node.parameter(SITEID_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_siteid()
+        appconfigid = test_plan_node.parameter(APPCONFIGID_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_appconfigid()
         app = test_plan_node.parameter_or_raise(APP_PAR, defaults=defaults)
         hostname = test_plan_node.parameter(HOSTNAME_PAR) or registry_singleton().obtain_new_hostname(app)
         admin_userid = test_plan_node.parameter(ADMIN_USERID_PAR, defaults=defaults) or 'feditestadmin'
         admin_username = test_plan_node.parameter(ADMIN_USERNAME_PAR, defaults=defaults) or 'feditestadmin'
-        admin_credential = test_plan_node.parameter(ADMIN_CREDENTIAL_PAR, defaults=defaults) or UbosNodeConfiguration._generate_credential()
+        admin_credential = test_plan_node.parameter(ADMIN_CREDENTIAL_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_credential()
         admin_email = test_plan_node.parameter(ADMIN_EMAIL_PAR, defaults=defaults) or f'{ admin_userid }@{ hostname }'
         start_delay_1 = test_plan_node.parameter(START_DELAY_PAR, defaults=defaults)
         if start_delay_1:
@@ -95,11 +95,11 @@ class MastodonUbosNodeConfiguration(UbosNodeDeployConfiguration, NodeWithMastodo
             start_delay = 10.0 # 10 sec should be good enough
 
         if test_plan_node.parameter(BACKUPFILE_PAR):
-            raise TestPlanNodeParameterMalformedError(BACKUP_APPCONFIGID_PAR, ' must not be given for MastodonUbosNodeDriver')
+            raise TestPlanNodeParameterMalformedError(BACKUP_APPCONFIGID_PAR, ' must not be given for MastodonUbosAdminNodeDriver')
         if test_plan_node.parameter(BACKUP_APPCONFIGID_PAR):
-            raise TestPlanNodeParameterMalformedError(BACKUP_APPCONFIGID_PAR, ' must not be given for MastodonUbosNodeDriver')
+            raise TestPlanNodeParameterMalformedError(BACKUP_APPCONFIGID_PAR, ' must not be given for MastodonUbosAdminNodeDriver')
 
-        return MastodonUbosNodeConfiguration(
+        return MastodonUbosAdminNodeConfiguration(
             node_driver = real_node_driver,
             siteid = siteid,
             appconfigid = appconfigid,

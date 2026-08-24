@@ -13,8 +13,8 @@ from feditest.nodedrivers import (
     Node,
     NodeConfiguration
 )
-from feditest.nodedrivers.mastodon.ubosgears_shared import MastodonUbosNodeConfiguration
-from feditest.nodedrivers.ubosgears import UbosNode, UbosNodeConfiguration, UbosNodeDriver
+from feditest.nodedrivers.mastodon.ubos_admin_shared import MastodonUbosAdminNodeConfiguration
+from feditest.nodedrivers.ubos_admin import UbosAdminNode, UbosAdminNodeConfiguration, UbosAdminNodeDriver
 from feditest.nodedrivers.wordpress import (
     OAUTH_TOKEN_ACCOUNT_FIELD,
     ROLE_ACCOUNT_FIELD,
@@ -27,7 +27,7 @@ from feditest.reporting import trace
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeAccountField, TestPlanNodeNonExistingAccountField
 
 
-class WordPressUbosAccountManager(DefaultAccountManager):
+class WordPressUbosAdminAccountManager(DefaultAccountManager):
     """
     Knows how to provision new accounts in WordPress
     """
@@ -39,13 +39,13 @@ class WordPressUbosAccountManager(DefaultAccountManager):
         super().set_node(node)
 
         if not self._accounts_allocated_to_role and not self._accounts_not_allocated_to_role:
-            config = cast(UbosNodeConfiguration, node.config)
+            config = cast(UbosAdminNodeConfiguration, node.config)
             admin_account = WordPressAccount(None, config.admin_userid, None, 1) # We know this is account with internal identifier 1
             admin_account.set_node(node)
             self._accounts_not_allocated_to_role.append(admin_account)
 
 
-class WordPressPlusPluginsUbosNode(WordPressPlusPluginsNode, UbosNode):
+class WordPressPlusPluginsUbosAdminNode(WordPressPlusPluginsNode, UbosAdminNode):
     """
     A WordPress+plugins Node running on UBOS. This means we know how to interact with it exactly.
     """
@@ -68,8 +68,8 @@ class WordPressPlusPluginsUbosNode(WordPressPlusPluginsNode, UbosNode):
         # $oauth->get_token_storage()->setAccessToken( $desired_token, $app->get_client_id(), $user_id, time() + HOUR_IN_SECONDS, $app->get_scopes() );
 
         trace(f'Provisioning OAuth token on {self} for user with name="{ account.userid }".')
-        config = cast(UbosNodeConfiguration, self.config)
-        node_driver = cast(WordPressPlusPluginsUbosNodeDriver, self.node_driver)
+        config = cast(UbosAdminNodeConfiguration, self.config)
+        node_driver = cast(WordPressPlusPluginsUbosAdminNodeDriver, self.node_driver)
 
         token = os.urandom(16).hex()
         php_script = f"""
@@ -92,7 +92,7 @@ $oauth->get_token_storage()->setAccessToken( "{ token }", "{ oauth_client_id }",
 
 
 @nodedriver
-class WordPressPlusPluginsUbosNodeDriver(UbosNodeDriver):
+class WordPressPlusPluginsUbosAdminNodeDriver(UbosAdminNodeDriver):
     """
     Installs/uninstalls a new WordPress instance with plugins "activitypub", "enable-mastodon-apps", "friends"
     and "webfinger" as a virtual host on UBOS Linux using ubos-admin.
@@ -128,7 +128,7 @@ class WordPressPlusPluginsUbosNodeDriver(UbosNodeDriver):
         # Once has the Node has been instantiated (we can't do that here yet): if the user did not specify at least one Account, we add the admin account
 
         return (
-            MastodonUbosNodeConfiguration.create_from_node_in_testplan(
+            MastodonUbosAdminNodeConfiguration.create_from_node_in_testplan(
                 test_plan_node,
                 self,
                 appconfigjson = {
@@ -151,9 +151,9 @@ class WordPressPlusPluginsUbosNodeDriver(UbosNodeDriver):
                 defaults = {
                     'app' : 'WordPress+plugins'
                 }),
-            WordPressUbosAccountManager(accounts, non_existing_accounts)
+            WordPressUbosAdminAccountManager(accounts, non_existing_accounts)
         )
 
     @override
-    def _instantiate_ubos_node(self, rolename: str, config: UbosNodeConfiguration, account_manager: AccountManager) -> Node:
-        return WordPressPlusPluginsUbosNode(rolename, config, account_manager)
+    def _instantiate_ubos_node(self, rolename: str, config: UbosAdminNodeConfiguration, account_manager: AccountManager) -> Node:
+        return WordPressPlusPluginsUbosAdminNode(rolename, config, account_manager)
