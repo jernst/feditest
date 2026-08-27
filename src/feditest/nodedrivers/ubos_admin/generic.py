@@ -1,5 +1,5 @@
 """
-Generic UBOS Gears Driver
+Generic ubos-admin Driver
 """
 from typing import override
 
@@ -12,7 +12,7 @@ from feditest.testplan import TestPlanConstellationNode
 class GenericUbosAdminNodeDriver(UbosAdminNodeDriver):
     @override
     def _instantiate_ubos_node(self, rolename: str, config: UbosAdminNodeConfiguration, account_manager: AccountManager) -> UbosAdminNode:
-        return  UbosAdminNode(rolename, config, account_manager)
+        return UbosAdminNode(rolename, config, account_manager)
 
 
     @override

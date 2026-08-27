@@ -1,5 +1,5 @@
 """
-Nodes managed via UBOS Gears https://ubos.net/docs/gears/
+Nodes managed via ubos-admin https://ubos.net/docs/gears/
 """
 from abc import abstractmethod
 import hashlib
@@ -27,10 +27,6 @@ from feditest.reporting import error, trace, warning
 from feditest.testplan import TestPlanConstellationNode, TestPlanNodeParameter, TestPlanNodeParameterMalformedError, TestPlanNodeParameterRequiredError
 from feditest.utils import email_validate
 
-
-"""
-There is no UbosAdminNode: all relevant info is in the UbosAdminNodeConfiguration.
-"""
 
 CONTEXT_PAR = TestPlanNodeParameter(
     'context',
