@@ -9,6 +9,7 @@ arch=('any')
 license=('MIT')
 depends=(
     'python'
+    'python-beautifulsoup4'
     'python-cryptography'
     'python-httpx'
     'python-langcodes'
@@ -25,6 +26,13 @@ makedepends=(
     'python-build'
     'python-hatchling'
     'python-installer'
+    'rsync'
+)
+checkdepends=(
+    'mypy'
+    'pyright'
+    'python-pytest'
+    'ruff'
 )
 
 prepare() {
@@ -32,22 +40,30 @@ prepare() {
     perl -pi -e 's/^(name\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgname"'${3}/' ../../pyproject.toml
     perl -pi -e 's/^(version\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgver"'${3}/' ../../pyproject.toml
     perl -pi -e 's/^(description\s*=\s*")([^"]+)("\s*$)/${1}'"$pkgdesc"'${3}/' ../../pyproject.toml
-
-    # We do this manually as I can't find a way of convincing makepkg to recursively copy a local directory with source=()
-    cd "${srcdir}"
-    [ -d "${pkgname}-${pkgver}" ] || mkdir "${pkgname}-${pkgver}"
-
-    cd "${pkgname}-${pkgver}"
-    rsync -a --delete ../../../{README-PyPI.md,pyproject.toml,src} ./
 }
 
 build() {
-    cd "${srcdir}/${pkgname}-${pkgver}"
-    python -m build --wheel --no-isolation
+    cd ${startdir}/..
+    python -m build --wheel --no-isolation --outdir "${srcdir}"
+}
+
+check() {
+    cd ${startdir}/../
+    echo Running pyright
+    pyright -p ${startdir}
+
+    cd ${startdir}/../src
+    echo Running ruff check
+    ruff check
+
+    echo Running mypy
+    MYPATH=. mypy --namespace-packages --explicit-package-bases --follow-untyped-imports .
+
+    cd ${startdir}/../
+    echo Running pytest
+    PYTHONPATH=src pytest -v
 }
 
 package() {
-# Code
-    cd "${srcdir}/${pkgname}-${pkgver}"
-    python -m installer --destdir="${pkgdir}" dist/*.whl
+    python -m installer --destdir="${pkgdir}" "${srcdir}"/*.whl
 }

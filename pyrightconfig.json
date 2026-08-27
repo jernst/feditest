@@ -1,5 +1,9 @@
 {
   "venvPath": ".",
-  "venv": "venv.darwin.default"
+  "venv": "venv.darwin.default",
+  "exclude": [
+    "tests.unit",
+    "tests.smoke"
+  ]
 }
 

@@ -1,0 +1,17 @@
+{
+  "include" : [
+    "../src"
+  ],
+  "ignore" : [
+    "src"
+  ],
+  "exclude": [
+    "../tests.unit",
+    "../tests.smoke",
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",
+    "venv.darwin.default",
+    "venv.linux.default"
+  ]
+}
