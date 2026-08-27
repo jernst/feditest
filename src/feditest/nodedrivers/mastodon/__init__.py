@@ -916,7 +916,7 @@ class NodeWithMastodonAPI(FediverseNode):
             if config.verify_tls_certificate:
                 self._requests_session.verify = certifi.where() # force re-read of cacert file, which the requests library reads upon first import
             else:
-                self._requests_session.verify = None
+                self._requests_session.verify = False
         return self._requests_session
 
 
