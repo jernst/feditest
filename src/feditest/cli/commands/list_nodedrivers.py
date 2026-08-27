@@ -19,9 +19,23 @@ def run(parser: ArgumentParser, args: Namespace, remaining: list[str]) -> int:
 
     feditest.load_node_drivers_from(args.nodedriversdir)
 
-    for name in sorted(feditest.all_node_drivers.keys()):
-        print(name)
+    if args.detail:
+        for name, clazz in sorted(feditest.all_node_drivers.items()):
+            doc = clazz.__doc__
+            if doc:
+                doc = doc.strip()
+            if doc:
+                doc = '    ' + doc.replace('\n', '\n    ')
+            else:
+                doc = '    <undocumented>'
 
+            print(name)
+            print(doc)
+
+    else:
+        for name in sorted(feditest.all_node_drivers.keys()):
+            print(name)
+            
     return 0
 
 
@@ -32,6 +46,7 @@ def add_sub_parser(parent_parser: _SubParsersAction, cmd_name: str) -> ArgumentP
     cmd_name: name of this command
     """
     parser = parent_parser.add_parser(cmd_name, help='List the available drivers for nodes that can be tested')
+    parser.add_argument('--detail', action='store_true', help='Provide more information.')
     add_nodedriversdir_argument(parser)
 
     return parser
