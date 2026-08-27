@@ -1,9 +1,12 @@
 {
-  "include" : [
+  "extraPaths" : [
     "../src"
   ],
   "ignore" : [
     "src"
+  ],
+  "include" : [
+    "../src"
   ],
   "exclude": [
     "../tests.unit",
