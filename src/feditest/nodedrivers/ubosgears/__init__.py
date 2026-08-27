@@ -35,77 +35,77 @@ There is no UbosNode: all relevant info is in the UbosNodeConfiguration.
 CONTEXT_PAR = TestPlanNodeParameter(
     'context',
     """Context path of the app""",
-    validate = lambda s: not s or re.fullmatch(r'^/([^?#]*)$', s)
+    parse_validate = lambda s, throw: s if not s or re.fullmatch(r'^/([^?#]*)$', s) else throw('Not a valid context')
 )
 
 SITEID_PAR = TestPlanNodeParameter(
     'siteid',
     """The UBOS SiteId to use for the app.""",
-    validate = lambda s: re.fullmatch('s[0-9a-f]{40}', s)
+    parse_validate = lambda s, throw: s if re.fullmatch('s[0-9a-f]{40}', s) else throw('Not a valid siteid')
 )
 
 APPCONFIGID_PAR = TestPlanNodeParameter(
     'appconfigid',
     """The UBOS AppConfigId to use for the app.""",
-    validate = lambda s: re.fullmatch('a[0-9a-f]{40}', s)
+    parse_validate = lambda s, throw: s if re.fullmatch('a[0-9a-f]{40}', s) else throw('Not a valid appconfigid')
 )
 
 ADMIN_USERID_PAR = TestPlanNodeParameter(
     'admin_userid',
     """User identifier for the administrator of the UBOS Site.""",
     default = 'feditestadmin', # Note: 'admin' is not permitted by Mastodon
-    validate = lambda s: re.fullmatch('[-a-zA-Z0-9_]+', s)
+    parse_validate = lambda s, throw: s if re.fullmatch('[-a-zA-Z0-9_]+', s) else throw('Not a valid user identifier')
 )
 
 ADMIN_USERNAME_PAR = TestPlanNodeParameter(
     'admin_username',
     """Human-readable name for the administrator of the UBOS Site.""",
     default = 'feditestadmin', # Note: 'admin' is not permitted by Mastodon
-    validate = lambda s: len(s)
+    parse_validate = lambda s, throw: s if len(s) else throw('Not a valid user name')
 )
 
 ADMIN_CREDENTIAL_PAR = TestPlanNodeParameter(
     'admin_credential',
     """Password for the administrator of the UBOS Site.""",
-    validate = lambda s: len(s)
+    parse_validate = lambda s, throw: s if len(s) else throw('Not a valid credential')
 )
 
 ADMIN_EMAIL_PAR = TestPlanNodeParameter(
     'admin_email',
     """Contact e-mail for the administrator of the UBOS Site.""",
-    validate = email_validate
+    parse_validate = lambda s, throw: s if email_validate(s) else throw('Not a valid e-mail')
 )
 
 BACKUPFILE_PAR = TestPlanNodeParameter(
     'backupfile',
     '''If the app is to be instantiated by restoring from a .ubos-backup, specify its file name.
     You must also specify parameter "backup_appconfigid".''',
-    validate = lambda s: os.path.isfile(s)
+    parse_validate = lambda s, throw: s if os.path.isfile(s) else throw('Not a valid file')
 )
 
 BACKUP_APPCONFIGID_PAR = TestPlanNodeParameter(
     'backup_appconfigid',
     f'''If the app is to be instantiated by restoring from a .ubos-backup, specify the AppConfigId to be restored.
     You must also specify parameter "{ BACKUPFILE_PAR }".''',
-    validate = lambda s: re.fullmatch('a[0-9a-f]{40}', s)
+    parse_validate = lambda s, throw: s if re.fullmatch('a[0-9a-f]{40}', s) else throw('Not a valid appconfigid')
 )
 
 TLSKEY_PAR = TestPlanNodeParameter(
     'tlskey',
     '''Use this TLS key for the webserver instead of automatically provisioning one locally.'''
-    # FIXME: should be valdiated
+    # FIXME: should be validated
 )
 
 TLSCERT_PAR = TestPlanNodeParameter(
     'tlscert',
     '''Use this TLS certificate chain for the webserver instead of a local certificate authority's.'''
-    # FIXME: should be valdiated
+    # FIXME: should be validated
 )
 
 START_DELAY_PAR = TestPlanNodeParameter(
     'start_delay',
     """Specify, in seconds, for how long feditest should wait until it considers the newly provisioned Node operational.""",
-    validate = lambda s: isinstance(s, int) and s>=0
+    parse_validate = lambda s, throw: s if isinstance(s, int) and s>=0 else throw('Not a non-negative integer')
 )
 
 RSH_CMD_PAR = TestPlanNodeParameter(

@@ -5,7 +5,7 @@ Classes that represent a TestPlan and its parts.
 from abc import ABC
 from dataclasses import dataclass
 import json
-from typing import Any, Final
+from typing import Any, Final, NoReturn
 from collections.abc import Callable
 
 import msgspec
@@ -31,6 +31,10 @@ class InvalidNonExistingAccountSpecificationException(Exception):
         super().__init__(f'{ context_msg }Invalid non-existing account specification: { msg }')
 
 
+type RaisesTestPlanNodeParameterMalformedError = Callable[[str], NoReturn]
+type ParameterValidationFunction = Callable[[str, RaisesTestPlanNodeParameterMalformedError], Any]
+
+
 @dataclass
 class TestPlanNodeParameter:
     """
@@ -39,7 +43,7 @@ class TestPlanNodeParameter:
     """
     name: str
     description: str
-    validate: Callable[[str],Any] | None = None
+    parse_validate: ParameterValidationFunction | None = None # Raises TestPlanNodeParameterMalformedError if cannot be validated
     default: str | None = None
 
 
@@ -195,11 +199,13 @@ class TestPlanConstellationNode(msgspec.Struct):
             ret = defaults.get(par.name)
         if ret is None:
             ret = par.default
-        if ret is not None:
-            if par.validate and par.validate(ret) is None:
-                raise TestPlanNodeParameterMalformedError(par)
-            return ret
-        return None
+        if ret is not None and par.parse_validate:
+            def throw(msg: str) -> NoReturn:
+                raise TestPlanNodeParameterMalformedError(par, msg)
+
+            ret = par.parse_validate(ret, throw)
+
+        return ret
 
 
     def parameter_or_raise(self, par: TestPlanNodeParameter, defaults: dict[str, str | None] | None = None) -> Any: # noqa: ANN401

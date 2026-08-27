@@ -14,7 +14,7 @@ from feditest.utils import appname_validate, appversion_validate, hostname_valid
 APP_PAR = TestPlanNodeParameter(
     'app',
     """Name of the app""",
-    validate = lambda x: len(x)
+    parse_validate = lambda x, throw: x if len(x) > 0 else throw('Cannot be empty')
 )
 APP_VERSION_PAR = TestPlanNodeParameter(
     'app_version',
@@ -23,7 +23,7 @@ APP_VERSION_PAR = TestPlanNodeParameter(
 HOSTNAME_PAR = TestPlanNodeParameter(
     'hostname',
     """DNS hostname of where the app is running.""",
-    validate=hostname_validate
+    parse_validate = lambda x, throw: x if hostname_validate(x) else throw('Not a valid hostname')
 )
 
 

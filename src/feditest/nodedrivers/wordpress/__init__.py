@@ -19,8 +19,9 @@ from feditest.utils import boolean_parse_validate, checked_cast, prompt_user_par
 VERIFY_API_TLS_CERTIFICATE_PAR = TestPlanNodeParameter(
     'verify_api_tls_certificate',
     """If set to false, accessing the Mastodon API will be performed without checking TLS certificates.""",
-    validate=boolean_parse_validate
+    parse_validate = lambda x, throw: x if boolean_parse_validate(x) else throw('Not a boolean')
 )
+
 
 def _oauth_token_validate(candidate: str) -> str | None:
     """
