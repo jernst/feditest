@@ -47,7 +47,7 @@ from feditest.utils import (
 @nodedriver
 class MastodonSaasNodeDriver(NodeDriver):
     """
-    Create a Mastodon Node that already runs as SaaS
+    Connect to an existing hosted instance of Mastodon.
     """
     @override
     @staticmethod

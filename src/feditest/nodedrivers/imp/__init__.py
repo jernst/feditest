@@ -66,7 +66,7 @@ class Imp(AbstractWebFingerDiagClient):
 @nodedriver
 class ImpInProcessNodeDriver(NodeDriver):
     """
-    Knows how to instantiate an Imp.
+    Runs the Imp client node, which is an in-process Webfinger client.
     """
     @override
     @staticmethod

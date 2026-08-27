@@ -5,7 +5,7 @@ from typing import override
 
 from feditest import nodedriver
 from feditest.nodedrivers import AccountManager, NodeConfiguration
-from feditest.nodedrivers.fallback.fediverse import AbstractFallbackFediverseNodeDriver, FallbackFediverseNode
+from feditest.nodedrivers.fediverse.fallback import AbstractFallbackFediverseNodeDriver, FallbackFediverseNode
 
 
 @nodedriver

@@ -117,7 +117,7 @@ class MastodonUbosNode(MastodonNode, UbosNode):
 @nodedriver
 class MastodonUbosNodeDriver(UbosNodeDriver):
     """
-    Knows how to instantiate Mastodon via UBOS.
+    Installs/uninstalls a new Mastodon instance as a virtual host on UBOS Linux using ubos-admin.
     """
     @override
     @staticmethod

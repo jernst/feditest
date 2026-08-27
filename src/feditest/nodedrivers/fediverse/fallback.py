@@ -1,5 +1,7 @@
 """
-Fallback implementation for FediverseNode
+Fallback implementation for FediverseNode: It implements all of the methods on FediverseNode
+by asking the user. This can be used as a superclass during development of a FediverseNode, for
+example, before all needed methods on FediverseNode have been written.
 """
 
 from typing import cast, override

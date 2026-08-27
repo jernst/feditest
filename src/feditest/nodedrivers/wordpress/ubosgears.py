@@ -94,7 +94,8 @@ $oauth->get_token_storage()->setAccessToken( "{ token }", "{ oauth_client_id }",
 @nodedriver
 class WordPressPlusPluginsUbosNodeDriver(UbosNodeDriver):
     """
-    Knows how to instantiate Mastodon via UBOS.
+    Installs/uninstalls a new WordPress instance with plugins "activitypub", "enable-mastodon-apps", "friends"
+    and "webfinger" as a virtual host on UBOS Linux using ubos-admin.
     """
     @override
     @staticmethod

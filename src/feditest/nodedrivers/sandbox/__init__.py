@@ -22,8 +22,7 @@ class SandboxMultClient_ImplementationA(SandboxMultClient):
 @nodedriver
 class SandboxMultClientDriver_ImplementationA(NodeDriver):
     """
-    Driver for the client implementation, so the client can be provisioned and unprovisioned for
-    test sessions.
+    Runs a client in the Sandbox (demo/test) protocol, for test sessions.
     """
     @override
     @staticmethod
@@ -80,8 +79,8 @@ class SandboxMultServer_Implementation1(SandboxMultServer):
 @nodedriver
 class SandboxMultServerDriver_Implementation1(NodeDriver):
     """
-    Driver for the first server implementation, so this server implementation can be provisioned and unprovisioned for
-    test sessions.
+    Runs the first (correct) server implementation in the Sandbox (demo/test) protocol, for test sessions,
+    with some test instrumentation. This server implementation simply calculates a*b.
     """
     @override
     @staticmethod
@@ -141,8 +140,9 @@ class SandboxMultServer_Implementation2Faulty(SandboxMultServer):
 @nodedriver
 class SandboxMultServerDriver_Implementation2Faulty(NodeDriver):
     """
-    Driver for the second server implementation, so this server implementation can be provisioned and unprovisioned for
-    test sessions.
+    Runs the second (faulty) server implementation in the Sandbox (demo/test) protocol, for test sessions,
+    with some test instrumentation. This server implementation calculates a*b through a for loop using
+    integers rather than floats.
     """
     @override
     @staticmethod

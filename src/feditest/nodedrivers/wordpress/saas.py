@@ -32,7 +32,8 @@ from feditest.utils import hostname_validate, prompt_user_parse_validate
 @nodedriver
 class WordPressPlusPluginsSaasNodeDriver(NodeDriver):
     """
-    Create a WordPress+plugins Node that already runs as Saas
+    Connect to an existing hosted instance of WordPress with plugins "activitypub", "enable-mastodon-apps",
+    "friends" and "webfinger".
     """
     @override
     @staticmethod
