@@ -226,7 +226,7 @@ def nodedriver[TNodeDriver](to_register: type[TNodeDriver]) -> type[TNodeDriver]
     global all_node_drivers
 
     if not _loading_node_drivers:
-        fatal('Do not define NodeDrivers outside of nodedriversdir')
+        fatal(f'Do not define NodeDrivers outside of nodedriversdir. Attempted to load { to_register }')
 
     if not issubclass(to_register,feditest.nodedrivers.NodeDriver):
         fatal('Cannot register an object as NodeDriver that isn\'t a subclass of NodeDriver:', to_register.__name__)
