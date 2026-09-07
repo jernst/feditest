@@ -85,14 +85,7 @@ class MastodonUbosAdminNodeConfiguration(UbosAdminNodeDeployConfiguration, NodeW
         admin_username = test_plan_node.parameter(ADMIN_USERNAME_PAR, defaults=defaults) or 'feditestadmin'
         admin_credential = test_plan_node.parameter(ADMIN_CREDENTIAL_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_credential()
         admin_email = test_plan_node.parameter(ADMIN_EMAIL_PAR, defaults=defaults) or f'{ admin_userid }@{ hostname }'
-        start_delay_1 = test_plan_node.parameter(START_DELAY_PAR, defaults=defaults)
-        if start_delay_1:
-            if isinstance(float, start_delay_1):
-                start_delay = cast(float, start_delay_1)
-            else:
-                start_delay = float(start_delay_1)
-        else:
-            start_delay = 10.0 # 10 sec should be good enough
+        start_delay = test_plan_node.parameter(START_DELAY_PAR, defaults=defaults) or 10.0 # 10 sec should be good enough
 
         if test_plan_node.parameter(BACKUPFILE_PAR):
             raise TestPlanNodeParameterMalformedError(BACKUP_APPCONFIGID_PAR, ' must not be given for MastodonUbosAdminNodeDriver')

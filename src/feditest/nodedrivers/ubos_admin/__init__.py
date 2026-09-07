@@ -101,7 +101,7 @@ TLSCERT_PAR = TestPlanNodeParameter(
 START_DELAY_PAR = TestPlanNodeParameter(
     'start_delay',
     """Specify, in seconds, for how long feditest should wait until it considers the newly provisioned Node operational.""",
-    parse_validate = lambda s, throw: s if isinstance(s, int) and s>=0 else throw('Not a non-negative integer')
+    parse_validate = lambda s, throw: s if isinstance(s, (int, float)) and s>=0. else throw('Not a non-negative number')
 )
 
 RSH_CMD_PAR = TestPlanNodeParameter(
