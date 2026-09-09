@@ -150,7 +150,7 @@ class MastodonUbosAdminNodeDriver(UbosAdminNodeDriver):
         # Once has the Node has been instantiated (we can't do that here yet): if the user did not specify at least one Account, we add the admin account
 
         return (
-            MastodonUbosAdminNodeConfiguration.create_from_node_in_testplan(
+            MastodonUbosAdminNodeConfiguration.create_from_node_in_testplan_with_app(
                 test_plan_node,
                 self,
                 appconfigjson = {
@@ -167,9 +167,7 @@ class MastodonUbosAdminNodeDriver(UbosAdminNodeDriver):
                         }
                     }
                 },
-                defaults = {
-                    'app' : 'Mastodon'
-                }),
+                app = 'Mastodon'),
             MastodonUbosAdminAccountManager(accounts, non_existing_accounts)
         )
 

@@ -5,7 +5,7 @@ Classes that represent a TestPlan and its parts.
 from abc import ABC
 from dataclasses import dataclass
 import json
-from typing import Any, Final, NoReturn
+from typing import Any, Final, NoReturn, cast
 from collections.abc import Callable
 
 import msgspec
@@ -32,19 +32,19 @@ class InvalidNonExistingAccountSpecificationException(Exception):
 
 
 type RaisesTestPlanNodeParameterMalformedError = Callable[[str], NoReturn]
-type ParameterValidationFunction = Callable[[str, RaisesTestPlanNodeParameterMalformedError], Any]
+type ParameterValidationFunction[T] = Callable[[Any, RaisesTestPlanNodeParameterMalformedError], T]
 
 
 @dataclass
-class TestPlanNodeParameter:
+class TestPlanNodeParameter[T]:
     """
     Captures everything that's there to know about a parameter in a Node specification in a test plan.
     This centralizes error checking functionality and makes emitting helpful output simpler.
     """
     name: str
     description: str
-    parse_validate: ParameterValidationFunction | None = None # Raises TestPlanNodeParameterMalformedError if cannot be validated
-    default: str | None = None
+    parse_validate: ParameterValidationFunction[T] | None = None # Raises TestPlanNodeParameterMalformedError if cannot be validated
+    default: T | None = None
 
 
 @dataclass
@@ -117,7 +117,7 @@ class TestPlanNodeParameterMalformedError(TestPlanError):
     A required parameter was given but malformed.
     """
     def __init__(self, par: TestPlanNodeParameter, more_details : str = '') -> None:
-        super().__init__(f'Required parameter malformed: "{ par.name }"{ more_details}.')
+        super().__init__(f'Required parameter malformed: "{ par.name }": { more_details }.')
 
 
 ROLE_KEY: Final[str] = 'role' # This applies to the TestPlanConstellationNode, but needs to be out here
@@ -191,12 +191,15 @@ class TestPlanConstellationNode(msgspec.Struct):
         return msgspec.convert(testplanconstellationnode_json, type=TestPlanConstellationNode)
 
 
-    def parameter(self, par: TestPlanNodeParameter, defaults: dict[str, str | None] | None = None) -> Any: # noqa: ANN401
-        ret = None
+    def parameter[T](self, par: TestPlanNodeParameter[T], default_value: T | Callable[[], T] | None = None) -> T | None:
+        ret : T | None = None
         if self.parameters:
             ret = self.parameters.get(par.name)
-        if ret is None and defaults:
-            ret = defaults.get(par.name)
+        if ret is None and default_value:
+            if callable(default_value):
+                ret = cast(T, default_value()) # Make linter happy
+            else:
+                ret = default_value
         if ret is None:
             ret = par.default
         if ret is not None and par.parse_validate:
@@ -208,8 +211,8 @@ class TestPlanConstellationNode(msgspec.Struct):
         return ret
 
 
-    def parameter_or_raise(self, par: TestPlanNodeParameter, defaults: dict[str, str | None] | None = None) -> Any: # noqa: ANN401
-        ret = self.parameter(par, defaults)
+    def parameter_or_raise[T](self, par: TestPlanNodeParameter[T], default_value: T | Callable[[], T] | None = None) -> T:
+        ret = self.parameter(par, default_value)
         if ret is None:
             raise TestPlanNodeParameterRequiredError(par)
         return ret

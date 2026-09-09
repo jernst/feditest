@@ -28,83 +28,83 @@ from feditest.testplan import TestPlanConstellationNode, TestPlanNodeParameter, 
 from feditest.utils import email_validate
 
 
-CONTEXT_PAR = TestPlanNodeParameter(
+CONTEXT_PAR = TestPlanNodeParameter[str](
     'context',
     """Context path of the app""",
     parse_validate = lambda s, throw: s if not s or re.fullmatch(r'^/([^?#]*)$', s) else throw('Not a valid context')
 )
 
-SITEID_PAR = TestPlanNodeParameter(
+SITEID_PAR = TestPlanNodeParameter[str](
     'siteid',
     """The UBOS SiteId to use for the app.""",
     parse_validate = lambda s, throw: s if re.fullmatch('s[0-9a-f]{40}', s) else throw('Not a valid siteid')
 )
 
-APPCONFIGID_PAR = TestPlanNodeParameter(
+APPCONFIGID_PAR = TestPlanNodeParameter[str](
     'appconfigid',
     """The UBOS AppConfigId to use for the app.""",
     parse_validate = lambda s, throw: s if re.fullmatch('a[0-9a-f]{40}', s) else throw('Not a valid appconfigid')
 )
 
-ADMIN_USERID_PAR = TestPlanNodeParameter(
+ADMIN_USERID_PAR = TestPlanNodeParameter[str](
     'admin_userid',
     """User identifier for the administrator of the UBOS Site.""",
     default = 'feditestadmin', # Note: 'admin' is not permitted by Mastodon
     parse_validate = lambda s, throw: s if re.fullmatch('[-a-zA-Z0-9_]+', s) else throw('Not a valid user identifier')
 )
 
-ADMIN_USERNAME_PAR = TestPlanNodeParameter(
+ADMIN_USERNAME_PAR = TestPlanNodeParameter[str](
     'admin_username',
     """Human-readable name for the administrator of the UBOS Site.""",
     default = 'feditestadmin', # Note: 'admin' is not permitted by Mastodon
     parse_validate = lambda s, throw: s if len(s) else throw('Not a valid user name')
 )
 
-ADMIN_CREDENTIAL_PAR = TestPlanNodeParameter(
+ADMIN_CREDENTIAL_PAR = TestPlanNodeParameter[str](
     'admin_credential',
     """Password for the administrator of the UBOS Site.""",
     parse_validate = lambda s, throw: s if len(s) else throw('Not a valid credential')
 )
 
-ADMIN_EMAIL_PAR = TestPlanNodeParameter(
+ADMIN_EMAIL_PAR = TestPlanNodeParameter[str](
     'admin_email',
     """Contact e-mail for the administrator of the UBOS Site.""",
     parse_validate = lambda s, throw: s if email_validate(s) else throw('Not a valid e-mail')
 )
 
-BACKUPFILE_PAR = TestPlanNodeParameter(
+BACKUPFILE_PAR = TestPlanNodeParameter[str](
     'backupfile',
     '''If the app is to be instantiated by restoring from a .ubos-backup, specify its file name.
     You must also specify parameter "backup_appconfigid".''',
     parse_validate = lambda s, throw: s if os.path.isfile(s) else throw('Not a valid file')
 )
 
-BACKUP_APPCONFIGID_PAR = TestPlanNodeParameter(
+BACKUP_APPCONFIGID_PAR = TestPlanNodeParameter[str](
     'backup_appconfigid',
     f'''If the app is to be instantiated by restoring from a .ubos-backup, specify the AppConfigId to be restored.
     You must also specify parameter "{ BACKUPFILE_PAR }".''',
     parse_validate = lambda s, throw: s if re.fullmatch('a[0-9a-f]{40}', s) else throw('Not a valid appconfigid')
 )
 
-TLSKEY_PAR = TestPlanNodeParameter(
+TLSKEY_PAR = TestPlanNodeParameter[str](
     'tlskey',
     '''Use this TLS key for the webserver instead of automatically provisioning one locally.'''
     # FIXME: should be validated
 )
 
-TLSCERT_PAR = TestPlanNodeParameter(
+TLSCERT_PAR = TestPlanNodeParameter[str](
     'tlscert',
     '''Use this TLS certificate chain for the webserver instead of a local certificate authority's.'''
     # FIXME: should be validated
 )
 
-START_DELAY_PAR = TestPlanNodeParameter(
+START_DELAY_PAR = TestPlanNodeParameter[int | float](
     'start_delay',
     """Specify, in seconds, for how long feditest should wait until it considers the newly provisioned Node operational.""",
     parse_validate = lambda s, throw: s if isinstance(s, (int, float)) and s>=0. else throw('Not a non-negative number')
 )
 
-RSH_CMD_PAR = TestPlanNodeParameter(
+RSH_CMD_PAR = TestPlanNodeParameter[str](
     'rshcmd',
     """The ssh or other command to run to perform UBOS administration commands at a remote Node."""
     # Cannot validate, can be all sorts of things
@@ -187,26 +187,25 @@ class UbosAdminNodeConfiguration(NodeConfiguration):
     def create_from_node_in_testplan(
         test_plan_node: TestPlanConstellationNode,
         node_driver: UbosAdminNodeDriver,
-        appconfigjson: dict[str, Any],
-        defaults: dict[str, str | None] | None = None
+        appconfigjson: dict[str, Any]
     ) -> UbosAdminNodeConfiguration:
         """
         Parses the information provided in the "parameters" dict of TestPlanConstellationNode
         """
-        siteid = test_plan_node.parameter(SITEID_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_siteid()
-        appconfigid = test_plan_node.parameter(APPCONFIGID_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_appconfigid()
-        app = test_plan_node.parameter_or_raise(APP_PAR, defaults=defaults)
-        hostname = test_plan_node.parameter(HOSTNAME_PAR) or registry_singleton().obtain_new_hostname(app)
-        admin_userid = test_plan_node.parameter(ADMIN_USERID_PAR, defaults=defaults) or 'feditestadmin'
-        admin_username = test_plan_node.parameter(ADMIN_USERNAME_PAR, defaults=defaults) or 'feditestadmin'
-        admin_credential = test_plan_node.parameter(ADMIN_CREDENTIAL_PAR, defaults=defaults) or UbosAdminNodeConfiguration._generate_credential()
-        admin_email = test_plan_node.parameter(ADMIN_EMAIL_PAR, defaults=defaults) or f'{ admin_userid }@{ hostname }'
-        start_delay_1 = test_plan_node.parameter(START_DELAY_PAR, defaults=defaults)
+        siteid = test_plan_node.parameter_or_raise(SITEID_PAR, lambda: UbosAdminNodeConfiguration._generate_siteid())
+        appconfigid = test_plan_node.parameter_or_raise(APPCONFIGID_PAR, lambda: UbosAdminNodeConfiguration._generate_appconfigid())
+        app = test_plan_node.parameter_or_raise(APP_PAR)
+        hostname = test_plan_node.parameter_or_raise(HOSTNAME_PAR, lambda: registry_singleton().obtain_new_hostname(app))
+        admin_userid = test_plan_node.parameter_or_raise(ADMIN_USERID_PAR, 'feditestadmin')
+        admin_username = test_plan_node.parameter_or_raise(ADMIN_USERNAME_PAR, 'feditestadmin')
+        admin_credential = test_plan_node.parameter_or_raise(ADMIN_CREDENTIAL_PAR, lambda: UbosAdminNodeConfiguration._generate_credential())
+        admin_email = test_plan_node.parameter_or_raise(ADMIN_EMAIL_PAR, f'{ admin_userid }@{ hostname }')
+        start_delay_1 = test_plan_node.parameter(START_DELAY_PAR)
         if start_delay_1:
-            if isinstance(float, start_delay_1):
-                start_delay = cast(float, start_delay_1)
-            else:
+            if isinstance(start_delay_1, int):
                 start_delay = float(start_delay_1)
+            else:
+                start_delay = start_delay_1
         else:
             start_delay = 0.0
 
@@ -229,11 +228,11 @@ class UbosAdminNodeConfiguration(NodeConfiguration):
                 backup_appconfigid = backup_appconfigid,
                 app = app,
                 hostname = hostname,
-                app_version = test_plan_node.parameter(APP_VERSION_PAR, defaults=defaults),
-                tlskey = test_plan_node.parameter(TLSKEY_PAR, defaults=defaults),
-                tlscert = test_plan_node.parameter(TLSCERT_PAR, defaults=defaults),
+                app_version = test_plan_node.parameter(APP_VERSION_PAR),
+                tlskey = test_plan_node.parameter(TLSKEY_PAR),
+                tlscert = test_plan_node.parameter(TLSCERT_PAR),
                 start_delay = start_delay,
-                rshcmd = test_plan_node.parameter(RSH_CMD_PAR, defaults=defaults)
+                rshcmd = test_plan_node.parameter(RSH_CMD_PAR)
             )
 
         else:
@@ -252,11 +251,11 @@ class UbosAdminNodeConfiguration(NodeConfiguration):
                 admin_email = admin_email,
                 app = app,
                 hostname = hostname,
-                app_version = test_plan_node.parameter(APP_VERSION_PAR, defaults=defaults),
-                tlskey = test_plan_node.parameter(TLSKEY_PAR, defaults=defaults),
-                tlscert = test_plan_node.parameter(TLSCERT_PAR, defaults=defaults),
+                app_version = test_plan_node.parameter(APP_VERSION_PAR),
+                tlskey = test_plan_node.parameter(TLSKEY_PAR),
+                tlscert = test_plan_node.parameter(TLSCERT_PAR),
                 start_delay = start_delay,
-                rshcmd = test_plan_node.parameter(RSH_CMD_PAR, defaults=defaults)
+                rshcmd = test_plan_node.parameter(RSH_CMD_PAR)
             )
 
 

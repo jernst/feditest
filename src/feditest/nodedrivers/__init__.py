@@ -11,16 +11,16 @@ from feditest.reporting import info
 from feditest.utils import appname_validate, appversion_validate, hostname_validate, prompt_user
 
 
-APP_PAR = TestPlanNodeParameter(
+APP_PAR = TestPlanNodeParameter[str](
     'app',
     """Name of the app""",
     parse_validate = lambda x, throw: x if len(x) > 0 else throw('Cannot be empty')
 )
-APP_VERSION_PAR = TestPlanNodeParameter(
+APP_VERSION_PAR = TestPlanNodeParameter[str](
     'app_version',
     """Version of the app"""
 )
-HOSTNAME_PAR = TestPlanNodeParameter(
+HOSTNAME_PAR = TestPlanNodeParameter[str](
     'hostname',
     """DNS hostname of where the app is running.""",
     parse_validate = lambda x, throw: x if hostname_validate(x) else throw('Not a valid hostname')

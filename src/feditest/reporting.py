@@ -34,7 +34,7 @@ logging.config.dictConfig({
         }
     }
 })
-LOG = logging.getLogger( 'feditest' )
+LOG = logging.getLogger('feditest')
 
 
 def set_reporting_level(n_verbose_flags: int) -> None:

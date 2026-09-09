@@ -55,10 +55,10 @@ class WordPressPlusPluginsSaasNodeDriver(NodeDriver):
 
     @override
     def create_configuration_account_manager(self, rolename: str, test_plan_node: TestPlanConstellationNode) -> tuple[NodeConfiguration, AccountManager | None]:
-        app = test_plan_node.parameter_or_raise(APP_PAR, { APP_PAR.name:  'WordPress+plugins' }) # Let user give a more descriptive name if they want to
+        app = test_plan_node.parameter_or_raise(APP_PAR, 'WordPress+plugins') # Let user give a more descriptive name if they want to
         app_version = test_plan_node.parameter(APP_VERSION_PAR)
         hostname = test_plan_node.parameter_or_raise(HOSTNAME_PAR)
-        verify_tls_certificate = test_plan_node.parameter_or_raise(VERIFY_API_TLS_CERTIFICATE_PAR, { VERIFY_API_TLS_CERTIFICATE_PAR.name: 'true' })
+        verify_tls_certificate = test_plan_node.parameter_or_raise(VERIFY_API_TLS_CERTIFICATE_PAR, True)
 
         if not hostname:
             hostname = prompt_user_parse_validate(f'Enter the hostname for the WordPress+plugins Node of constellation role "{ rolename }"'

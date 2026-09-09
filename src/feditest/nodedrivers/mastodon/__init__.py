@@ -45,10 +45,10 @@ from feditest.utils import (
     ParsedAcctUri
 )
 
-VERIFY_API_TLS_CERTIFICATE_PAR = TestPlanNodeParameter(
+VERIFY_API_TLS_CERTIFICATE_PAR = TestPlanNodeParameter[bool](
     'verify_api_tls_certificate',
     """If set to false, accessing the Mastodon API will be performed without checking TLS certificates.""",
-    parse_validate = lambda x, throw: boolean_parse_validate(x) if boolean_parse_validate(x) is not None else throw('Not a boolean')
+    parse_validate = lambda x, throw: cast(bool, boolean_parse_validate(x)) if boolean_parse_validate(x) is not None else throw('Not a boolean')
 )
 
 
