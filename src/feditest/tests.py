@@ -72,10 +72,10 @@ class TestFromTestFunction(Test):
 
 
 
-class TestStepInTestClass:
+class TestItemInTestClass(ABC): # noqa: B024 - intentional ABC without abstract methods
     """
-    A step in a TestFromTestClass. TestSteps for the same Test are all declared with @step in the same class,
-    and will be executed in sequence unless specified otherwise.
+    Common shape for a @step, @init, or @cleanup method registered inside a class
+    decorated with @test.
     """
     def __init__(self, name: str, description: str | None, test: TestFromTestClass, test_step_function: Callable[[Any],None]) -> None:
         self.name: str = name
@@ -88,12 +88,34 @@ class TestStepInTestClass:
         return self.name
 
 
+class TestInitInTestClass(TestItemInTestClass):
+    """
+    Setup code declared with @init in a TestFromTestClass, executed before all @steps.
+    """
+
+
+class TestStepInTestClass(TestItemInTestClass):
+    """
+    A step in a TestFromTestClass. TestSteps for the same Test are all declared with @step in the same class,
+    and will be executed in sequence unless specified otherwise.
+    """
+
+
+class TestCleanupInTestClass(TestItemInTestClass):
+    """
+    Cleanup code declared with @cleanup in a TestFromTestClass, executed after all @steps,
+    whether or not they succeeded.
+    """
+
+
 class TestFromTestClass(Test):
     def __init__(self, name: str, description: str | None, clazz: type, builtin: bool = False) -> None:
         super().__init__(name, description, builtin)
 
         self.clazz = clazz
+        self.init_steps : list[TestInitInTestClass] = []
         self.steps : list[TestStepInTestClass] = []
+        self.cleanup_steps : list[TestCleanupInTestClass] = []
 
 
     @override

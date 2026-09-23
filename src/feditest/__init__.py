@@ -18,8 +18,11 @@ import feditest.nodedrivers
 from feditest.reporting import fatal, warning
 from feditest.tests import (
     Test,
+    TestCleanupInTestClass,
     TestFromTestClass,
     TestFromTestFunction,
+    TestInitInTestClass,
+    TestItemInTestClass,
     TestStepInTestClass,
 )
 from feditest.utils import load_python_from
@@ -31,7 +34,9 @@ all_tests : dict[str,Test] = {}
 
 # Used to collect supposed tested during annotation processing, destructively processed, ignored afterwards
 _registered_as_test : dict[str,Callable[..., None] | type] = {}
+_registered_as_test_init : dict[str,Callable[..., None]] = {}
 _registered_as_test_step : dict[str,Callable[..., None]] = {}
+_registered_as_test_cleanup : dict[str,Callable[..., None]] = {}
 
 _loading_tests = False
 
@@ -69,13 +74,45 @@ def _load_tests_pass1(dirs: list[str]) -> None:
     _loading_tests = False
 
 
+def _match_registered_functions[TItem: TestItemInTestClass](
+        clazz: type,
+        registered: dict[str, Callable[..., None]],
+        test: TestFromTestClass,
+        item_class: type[TItem]
+) -> list[TItem]:
+    """
+    Find the members of clazz that were registered (as @init, @step, or @cleanup) in the
+    given registered dict, and wrap them into item_class instances.
+    inspect.getmembers lists members alphabetically, while our annotations list them in
+    sequence. So we need to iterate over the registered names rather than getmembers().
+    Matched names are removed from registered, so leftovers can still be detected afterwards.
+    """
+    ret : list[TItem] = []
+    to_delete = []
+    for registered_name in registered:
+        for _, candidate_function in getmembers(clazz, isfunction):
+            candidate_name = _full_name_of_function(candidate_function)
+            if registered_name == candidate_name:
+                ret.append(item_class(
+                        candidate_name,
+                        candidate_function.__doc__.strip() if candidate_function.__doc__ else None,
+                        test,
+                        candidate_function))
+                to_delete.append(registered_name)
+    for d in to_delete:
+        del registered[d]
+    return ret
+
+
 def _load_tests_pass2() -> None:
     """
     Make sense of what was being registered, error checking and connect them together.
     """
     global all_tests
     global _registered_as_test
+    global _registered_as_test_init
     global _registered_as_test_step
+    global _registered_as_test_cleanup
 
     for name, value in _registered_as_test.items():
         test : Test | None = None
@@ -91,22 +128,9 @@ def _load_tests_pass2() -> None:
                 value.__doc__.strip() if value.__doc__ else None,
                 value)
 
-            # inspect.getmembers lists members alphabetically, while our @step annotations
-            # list them in sequence. So we need to process @steps rather than getmembers()
-            to_delete = []
-            for step_name in _registered_as_test_step:
-                for _, candidate_step_function in getmembers(value,isfunction):
-                    candidate_step_name = _full_name_of_function(candidate_step_function)
-                    if step_name == candidate_step_name:
-                        test_step = TestStepInTestClass(
-                                candidate_step_name,
-                                candidate_step_function.__doc__.strip() if candidate_step_function.__doc__ else None,
-                                test,
-                                candidate_step_function)
-                        test.steps.append(test_step)
-                        to_delete.append(step_name)
-            for d in to_delete:
-                del _registered_as_test_step[d]
+            test.init_steps = _match_registered_functions(value, _registered_as_test_init, test, TestInitInTestClass)
+            test.steps = _match_registered_functions(value, _registered_as_test_step, test, TestStepInTestClass)
+            test.cleanup_steps = _match_registered_functions(value, _registered_as_test_cleanup, test, TestCleanupInTestClass)
 
         else:
             fatal('Cannot register a test that is neither a function nor a class', name)
@@ -114,9 +138,17 @@ def _load_tests_pass2() -> None:
         if test:
             all_tests[name] = test
 
+    if _registered_as_test_init:
+        fatal('Marked as @init, but not a member function of a class marked as @test\n    '
+              + '\n    '.join( _registered_as_test_init.keys() ))
+
     if _registered_as_test_step:
         fatal('Marked as @step, but not a member function of a class marked as @test\n    '
               + '\n    '.join( _registered_as_test_step.keys() ))
+
+    if _registered_as_test_cleanup:
+        fatal('Marked as @cleanup, but not a member function of a class marked as @test\n    '
+              + '\n    '.join( _registered_as_test_cleanup.keys() ))
 
 
 def load_default_tests() -> None:
@@ -178,6 +210,44 @@ def step(to_register: Callable[..., None]) -> Callable[..., None]:
         fatal(f'Test step with this name registered already: {name}')
 
     _registered_as_test_step[name] = to_register
+    return to_register
+
+
+def init(to_register: Callable[..., None]) -> Callable[..., None]:
+    """
+    Used as decorator to register setup code to be executed before the tests. Use on a non-static function defined
+    in a class that has been decorated with @test.
+    """
+    global _loading_tests
+    global _registered_as_test_init
+
+    if not _loading_tests:
+        fatal('Do not define test init methods outside of testsdir')
+
+    name = _full_name_of_function(to_register)
+    if name in _registered_as_test_init:
+        fatal(f'Test init method with this name registered already: {name}')
+
+    _registered_as_test_init[name] = to_register
+    return to_register
+
+
+def cleanup(to_register: Callable[..., None]) -> Callable[..., None]:
+    """
+    Used as decorator to register cleanup code to be executed after the tests, whether they have passed or not.
+    Use on a non-static function defined in a class that has been decorated with @test.
+    """
+    global _loading_tests
+    global _registered_as_test_cleanup
+
+    if not _loading_tests:
+        fatal('Do not define test cleanup methods outside of testsdir')
+
+    name = _full_name_of_function(to_register)
+    if name in _registered_as_test_cleanup:
+        fatal(f'Test cleanup method with this name registered already: {name}')
+
+    _registered_as_test_cleanup[name] = to_register
     return to_register
 
 

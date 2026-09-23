@@ -277,8 +277,12 @@ class TestRunClass(TestRunTest):
                 constellation_role_name = self.plan_testspec.rolemapping[local_role_name]
             args[local_role_name] = self.run_constellation.get_node(constellation_role_name) # type: ignore[union-attr]
 
+        test_instance : object | None = None
         try:
             test_instance = self.test_from_test_class.clazz(**args)
+
+            for init_step in self.test_from_test_class.init_steps:
+                init_step.test_step_function(test_instance)
 
             plan_step_index = controller.determine_next_test_step_index(True)
             while plan_step_index>=0 and plan_step_index<len(self.test_from_test_class.steps):
@@ -302,6 +306,18 @@ class TestRunClass(TestRunTest):
         except Exception as e: # This should not happen
             self.exception = e
         finally:
+            # Run @cleanup methods whether or not the test (or its @init) succeeded -- but only
+            # if the test instance was actually constructed.
+            if test_instance is not None:
+                for cleanup_step in self.test_from_test_class.cleanup_steps:
+                    try:
+                        cleanup_step.test_step_function(test_instance)
+                    except Exception as e:
+                        error(f'Cleanup { cleanup_step } in { self.str_in_session() } raised Exception:\n'
+                              + ''.join(traceback.format_exception(e)))
+                        if self.exception is None:
+                            self.exception = e
+
             self.ended = datetime.now(UTC)
             if self.exception:
                 error(f'Ended test { self.str_in_session() } with Exception:\n' + ''.join(traceback.format_exception(self.exception)))
