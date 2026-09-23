@@ -57,7 +57,7 @@ check() {
     ruff check
 
     echo Running mypy
-    MYPATH=. mypy --namespace-packages --explicit-package-bases --follow-untyped-imports .
+    MYPATH=. mypy --namespace-packages --explicit-package-bases --follow-untyped-imports --cache-dir=/tmp/mypy-cache .
 
     cd ${startdir}/../
     echo Running pytest
